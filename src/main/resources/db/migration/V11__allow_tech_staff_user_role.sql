@@ -1,4 +1,0 @@
-ALTER TABLE users DROP CHECK chk_users_role;
-
-ALTER TABLE users ADD CONSTRAINT chk_users_role
-    CHECK (role IN ('ADMIN', 'MANAGER', 'CUSTOMER', 'STAFF_WAREHOUSE', 'STAFF_SALES', 'STAFF_TECH'));

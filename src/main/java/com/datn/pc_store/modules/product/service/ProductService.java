@@ -10,8 +10,6 @@ import com.datn.pc_store.modules.product.entity.*;
 import com.datn.pc_store.modules.product.enums.*;
 import com.datn.pc_store.modules.product.mapper.ProductMapper;
 import com.datn.pc_store.modules.product.repository.*;
-import com.datn.pc_store.modules.productprice.dto.ProductPriceResponse;
-import com.datn.pc_store.modules.productprice.service.ProductPriceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -36,7 +34,6 @@ public class ProductService {
     private final BrandRepository brandRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
-    private final ProductPriceService productPriceService;
 
     @Transactional(readOnly = true)
     public PageResponse<ProductResponse> getAllProducts(String keyword, ProductStatus status, ProductType productType,
@@ -49,7 +46,6 @@ public class ProductService {
         }
         var page = productRepository.searchProducts(keyword, status, productType, brandId, categoryId, publicOnly, pageable);
         Map<Long, List<ProductCategory>> links = loadCategoryLinks(page.getContent());
-        Map<Long, ProductPriceResponse> prices = productPriceService.getCurrentPrices(page.getContent().stream().map(Product::getId).toList());
         Map<Long, List<BuildingPc>> pcItems = loadBuildingPcLinks(page.getContent());
         Set<Long> allCompIds = pcItems.values().stream()
                 .flatMap(List::stream)
@@ -61,7 +57,6 @@ public class ProductService {
         return PageResponse.of(page.map(product -> toResponse(
                 product,
                 links.getOrDefault(product.getId(), List.of()),
-                prices.get(product.getId()),
                 pcItems.getOrDefault(product.getId(), List.of()),
                 compMap
         )));
@@ -103,7 +98,6 @@ public class ProductService {
         Product saved = productRepository.save(product);
         replaceCategories(saved.getId(), req.getCategoryIds(), req.getPrimaryCategoryId());
         replaceBuildingPcItems(saved.getId(), saved.getProductType(), req.getItems());
-        recordPrice(saved);
         log.info("Đã tạo sản phẩm id: {}", saved.getId());
         return toResponse(saved);
     }
@@ -117,7 +111,6 @@ public class ProductService {
         validateReferences(req.getBrandId(), req.getCategoryIds(), req.getPrimaryCategoryId());
         validateBuildingPcItems(product.getProductType(), req.getItems(), id);
 
-        Long previousPrice = product.getPrice();
         productMapper.updateEntityFromDto(req, product);
         if (req.getPrice() != null) product.setPrice(req.getPrice().longValueExact());
         product.setName(req.getName().trim());
@@ -129,7 +122,6 @@ public class ProductService {
         Product saved = productRepository.save(product);
         replaceCategories(id, req.getCategoryIds(), req.getPrimaryCategoryId());
         replaceBuildingPcItems(id, saved.getProductType(), req.getItems());
-        if (!Objects.equals(previousPrice, saved.getPrice())) recordPrice(saved);
         log.info("Đã cập nhật sản phẩm id: {}", id);
         return toResponse(saved);
     }
@@ -153,14 +145,8 @@ public class ProductService {
     }
 
     private Product lockProduct(Long id) {
-        return productRepository.findForPriceUpdate(id)
+        return productRepository.findForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Sản phẩm", "id", id));
-    }
-
-    private void recordPrice(Product product) {
-        if (product.getPrice() != null) {
-            productPriceService.recordProductPrice(product.getId(), product.getPrice());
-        }
     }
 
     private void requireVisible(Product product, boolean publicOnly) {
@@ -284,7 +270,6 @@ public class ProductService {
 
     private ProductResponse toResponse(Product product) {
         List<ProductCategory> links = productCategoryRepository.findByProductIdIn(List.of(product.getId()));
-        ProductPriceResponse price = productPriceService.getCurrentPrices(List.of(product.getId())).get(product.getId());
         List<BuildingPc> bpcList = product.getProductType() == ProductType.PC
                 ? buildingPcRepository.findByPcId(product.getId())
                 : List.of();
@@ -293,16 +278,15 @@ public class ProductService {
             Set<Long> compIds = bpcList.stream().map(BuildingPc::getProductId).collect(Collectors.toSet());
             compMap = productRepository.findAllById(compIds).stream().collect(Collectors.toMap(Product::getId, p -> p));
         }
-        return toResponse(product, links, price, bpcList, compMap);
+        return toResponse(product, links, bpcList, compMap);
     }
 
-    private ProductResponse toResponse(Product product, List<ProductCategory> links, ProductPriceResponse price,
+    private ProductResponse toResponse(Product product, List<ProductCategory> links,
                                        List<BuildingPc> bpcList, Map<Long, Product> compMap) {
         ProductResponse response = productMapper.toResponse(product);
         response.setCategoryIds(links.stream().map(ProductCategory::getCategoryId).collect(Collectors.toCollection(TreeSet::new)));
         response.setPrimaryCategoryId(links.stream().filter(ProductCategory::isPrimary)
                 .map(ProductCategory::getCategoryId).findFirst().orElse(null));
-        response.setPriceId(price == null ? null : price.getId());
         if (product.getProductType() == ProductType.PC) {
             List<BuildingPcItemResponse> items = bpcList.stream().map(bpc -> {
                 Product comp = compMap != null ? compMap.get(bpc.getProductId()) : null;

@@ -11,6 +11,7 @@ public record CurrentUserResponse(
         @Schema(description = "Tên đăng nhập", example = "customer01")
         String username,
         @Schema(description = "Danh sách quyền của tài khoản", example = "[\"ROLE_CUSTOMER\"]")
-        List<String> authorities
+        List<String> authorities,
+        boolean emailVerified
 ) {
 }

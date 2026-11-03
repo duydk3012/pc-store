@@ -1,30 +1,40 @@
--- Demo data. Flyway runs this migration once after V1-V13.
--- Uses fixed IDs >= 10001. Intended for a fresh pc_store_demo database.
+-- PC Store: demo data. Requires V1__init_schema.sql.
+-- Flyway loads this file once, after the initial schema.
+
+-- ============================================================================
+-- DEMO DATA: 400 records across 32 tables; account_challenges starts empty
+-- ============================================================================
+
+-- Uses fixed IDs >= 10001. Intended for a fresh development database.
 -- All passwords: Demo@123456 (BCrypt). All sample refresh tokens are revoked.
 -- No TRUNCATE, DELETE or disabling of foreign-key checks.
 
+-- ---------------------------------------------------------------------------
+-- 01. IDENTITY & AUTHENTICATION
+-- ---------------------------------------------------------------------------
+
 -- users: 20 records
 INSERT INTO users (id, username, password_hash, full_name, email, phone_number, address, citizen_identification_card, role, status, token_version, is_deleted, created_by, created_date, last_modified_by, last_modified_date) VALUES
-    (10001, 'demo_admin', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Quản trị viên Demo', 'demo_admin@example.com', '0901000001', '1 Đường Demo, Hà Nội', '001099000001', 'ADMIN', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10002, 'demo_manager', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Quản lý Demo', 'demo_manager@example.com', '0901000002', '2 Đường Demo, Hà Nội', '001099000002', 'MANAGER', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10003, 'demo_warehouse', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Nhân viên kho Demo 01', 'demo_warehouse@example.com', '0901000003', '3 Đường Demo, Hà Nội', '001099000003', 'STAFF_WAREHOUSE', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10004, 'demo_warehouse02', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Nhân viên kho Demo 02', 'demo_warehouse02@example.com', '0901000004', '4 Đường Demo, Hà Nội', '001099000004', 'STAFF_WAREHOUSE', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10005, 'demo_sales', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Nhân viên bán hàng Demo 01', 'demo_sales@example.com', '0901000005', '5 Đường Demo, Hà Nội', '001099000005', 'STAFF_SALES', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10006, 'demo_sales02', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Nhân viên bán hàng Demo 02', 'demo_sales02@example.com', '0901000006', '6 Đường Demo, Hà Nội', '001099000006', 'STAFF_SALES', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10007, 'demo_tech', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Kỹ thuật viên Demo 01', 'demo_tech@example.com', '0901000007', '7 Đường Demo, Hà Nội', '001099000007', 'STAFF_TECH', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10008, 'demo_tech02', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Kỹ thuật viên Demo 02', 'demo_tech02@example.com', '0901000008', '8 Đường Demo, Hà Nội', '001099000008', 'STAFF_TECH', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10009, 'demo_manager02', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Quản lý Demo 02', 'demo_manager02@example.com', '0901000009', '9 Đường Demo, Hà Nội', '001099000009', 'MANAGER', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10010, 'demo_tech03', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Kỹ thuật viên Demo 03', 'demo_tech03@example.com', '0901000010', '10 Đường Demo, Hà Nội', '001099000010', 'STAFF_TECH', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10011, 'demo_customer01', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Nguyễn Minh An', 'demo_customer01@example.com', '0901000011', '11 Đường Demo, Hà Nội', '001099000011', 'CUSTOMER', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10012, 'demo_customer02', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Trần Thanh Bình', 'demo_customer02@example.com', '0901000012', '12 Đường Demo, Hà Nội', '001099000012', 'CUSTOMER', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10013, 'demo_customer03', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Lê Hoàng Chi', 'demo_customer03@example.com', '0901000013', '13 Đường Demo, Hà Nội', '001099000013', 'CUSTOMER', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10014, 'demo_customer04', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Phạm Hải Dương', 'demo_customer04@example.com', '0901000014', '14 Đường Demo, Hà Nội', '001099000014', 'CUSTOMER', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10015, 'demo_customer05', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Hoàng Gia Hân', 'demo_customer05@example.com', '0901000015', '15 Đường Demo, Hà Nội', '001099000015', 'CUSTOMER', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10016, 'demo_customer06', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Đặng Trung Hiếu', 'demo_customer06@example.com', '0901000016', '16 Đường Demo, Hà Nội', '001099000016', 'CUSTOMER', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10017, 'demo_customer07', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Vũ Ngọc Khánh', 'demo_customer07@example.com', '0901000017', '17 Đường Demo, Hà Nội', '001099000017', 'CUSTOMER', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10018, 'demo_customer08', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Bùi Mai Linh', 'demo_customer08@example.com', '0901000018', '18 Đường Demo, Hà Nội', '001099000018', 'CUSTOMER', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10019, 'demo_customer09', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Đỗ Quang Minh', 'demo_customer09@example.com', '0901000019', '19 Đường Demo, Hà Nội', '001099000019', 'CUSTOMER', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
-    (10020, 'demo_customer10', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Ngô Thu Trang', 'demo_customer10@example.com', '0901000020', '20 Đường Demo, Hà Nội', '001099000020', 'CUSTOMER', 'ACTIVE', 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00');
+    (10001, 'demo_admin', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Quản trị viên Demo', 'demo_admin@example.com', '0901000001', '1 Đường Demo, Hà Nội', '001099000001', 0, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10002, 'demo_manager', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Quản lý Demo', 'demo_manager@example.com', '0901000002', '2 Đường Demo, Hà Nội', '001099000002', 1, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10003, 'demo_warehouse', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Nhân viên kho Demo 01', 'demo_warehouse@example.com', '0901000003', '3 Đường Demo, Hà Nội', '001099000003', 3, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10004, 'demo_warehouse02', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Nhân viên kho Demo 02', 'demo_warehouse02@example.com', '0901000004', '4 Đường Demo, Hà Nội', '001099000004', 3, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10005, 'demo_sales', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Nhân viên bán hàng Demo 01', 'demo_sales@example.com', '0901000005', '5 Đường Demo, Hà Nội', '001099000005', 4, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10006, 'demo_sales02', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Nhân viên bán hàng Demo 02', 'demo_sales02@example.com', '0901000006', '6 Đường Demo, Hà Nội', '001099000006', 4, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10007, 'demo_tech', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Kỹ thuật viên Demo 01', 'demo_tech@example.com', '0901000007', '7 Đường Demo, Hà Nội', '001099000007', 5, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10008, 'demo_tech02', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Kỹ thuật viên Demo 02', 'demo_tech02@example.com', '0901000008', '8 Đường Demo, Hà Nội', '001099000008', 5, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10009, 'demo_manager02', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Quản lý Demo 02', 'demo_manager02@example.com', '0901000009', '9 Đường Demo, Hà Nội', '001099000009', 1, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10010, 'demo_tech03', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Kỹ thuật viên Demo 03', 'demo_tech03@example.com', '0901000010', '10 Đường Demo, Hà Nội', '001099000010', 5, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10011, 'demo_customer01', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Nguyễn Minh An', 'demo_customer01@example.com', '0901000011', '11 Đường Demo, Hà Nội', '001099000011', 2, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10012, 'demo_customer02', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Trần Thanh Bình', 'demo_customer02@example.com', '0901000012', '12 Đường Demo, Hà Nội', '001099000012', 2, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10013, 'demo_customer03', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Lê Hoàng Chi', 'demo_customer03@example.com', '0901000013', '13 Đường Demo, Hà Nội', '001099000013', 2, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10014, 'demo_customer04', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Phạm Hải Dương', 'demo_customer04@example.com', '0901000014', '14 Đường Demo, Hà Nội', '001099000014', 2, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10015, 'demo_customer05', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Hoàng Gia Hân', 'demo_customer05@example.com', '0901000015', '15 Đường Demo, Hà Nội', '001099000015', 2, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10016, 'demo_customer06', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Đặng Trung Hiếu', 'demo_customer06@example.com', '0901000016', '16 Đường Demo, Hà Nội', '001099000016', 2, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10017, 'demo_customer07', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Vũ Ngọc Khánh', 'demo_customer07@example.com', '0901000017', '17 Đường Demo, Hà Nội', '001099000017', 2, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10018, 'demo_customer08', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Bùi Mai Linh', 'demo_customer08@example.com', '0901000018', '18 Đường Demo, Hà Nội', '001099000018', 2, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10019, 'demo_customer09', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Đỗ Quang Minh', 'demo_customer09@example.com', '0901000019', '19 Đường Demo, Hà Nội', '001099000019', 2, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00'),
+    (10020, 'demo_customer10', '$2a$10$c67h/iZZTnuooeoeT947x.Ghrrn2bFCQqbeNOlpIdnVgRd0/YeHyq', 'Ngô Thu Trang', 'demo_customer10@example.com', '0901000020', '20 Đường Demo, Hà Nội', '001099000020', 2, 1, 0, 0, 10001, '2026-07-01 08:00:00', 10001, '2026-07-01 08:00:00');
 
 -- refresh_tokens: 10 records
 INSERT INTO refresh_tokens (id, user_id, token_hash, expires_at, revoked, created_date) VALUES
@@ -39,18 +49,26 @@ INSERT INTO refresh_tokens (id, user_id, token_hash, expires_at, revoked, create
     (10009, 10019, '347c002793683658c2018dd37a16c0574797beaa826b78265005ae928bd7807c', '2026-09-08 08:00:00', 1, '2026-09-01 08:00:00'),
     (10010, 10020, '8d5d4337af7073137efd934b9f41c17e92111f47901e1ee60eddbd72ac57224b', '2026-09-08 08:00:00', 1, '2026-09-01 08:00:00');
 
+-- ---------------------------------------------------------------------------
+-- 02. SUPPLIERS
+-- ---------------------------------------------------------------------------
+
 -- suppliers: 10 records
 INSERT INTO suppliers (id, code, name, contact_person, email, phone_number, address, tax_code, status, is_deleted, created_by, created_date, last_modified_by, last_modified_date) VALUES
-    (10001, 'DEMO-NCC-001', 'Nhà cung cấp máy tính Demo 01', 'Đại diện Demo 01', 'demo.ncc01@example.com', '0912000001', '10 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-001', 'ACTIVE', 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10002, 'DEMO-NCC-002', 'Nhà cung cấp máy tính Demo 02', 'Đại diện Demo 02', 'demo.ncc02@example.com', '0912000002', '20 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-002', 'ACTIVE', 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10003, 'DEMO-NCC-003', 'Nhà cung cấp máy tính Demo 03', 'Đại diện Demo 03', 'demo.ncc03@example.com', '0912000003', '30 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-003', 'ACTIVE', 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10004, 'DEMO-NCC-004', 'Nhà cung cấp máy tính Demo 04', 'Đại diện Demo 04', 'demo.ncc04@example.com', '0912000004', '40 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-004', 'ACTIVE', 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10005, 'DEMO-NCC-005', 'Nhà cung cấp máy tính Demo 05', 'Đại diện Demo 05', 'demo.ncc05@example.com', '0912000005', '50 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-005', 'ACTIVE', 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10006, 'DEMO-NCC-006', 'Nhà cung cấp máy tính Demo 06', 'Đại diện Demo 06', 'demo.ncc06@example.com', '0912000006', '60 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-006', 'ACTIVE', 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10007, 'DEMO-NCC-007', 'Nhà cung cấp máy tính Demo 07', 'Đại diện Demo 07', 'demo.ncc07@example.com', '0912000007', '70 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-007', 'ACTIVE', 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10008, 'DEMO-NCC-008', 'Nhà cung cấp máy tính Demo 08', 'Đại diện Demo 08', 'demo.ncc08@example.com', '0912000008', '80 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-008', 'ACTIVE', 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10009, 'DEMO-NCC-009', 'Nhà cung cấp máy tính Demo 09', 'Đại diện Demo 09', 'demo.ncc09@example.com', '0912000009', '90 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-009', 'ACTIVE', 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10010, 'DEMO-NCC-010', 'Nhà cung cấp máy tính Demo 10', 'Đại diện Demo 10', 'demo.ncc10@example.com', '0912000010', '100 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-010', 'ACTIVE', 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00');
+    (10001, 'DEMO-NCC-001', 'Nhà cung cấp máy tính Demo 01', 'Đại diện Demo 01', 'demo.ncc01@example.com', '0912000001', '10 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-001', 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10002, 'DEMO-NCC-002', 'Nhà cung cấp máy tính Demo 02', 'Đại diện Demo 02', 'demo.ncc02@example.com', '0912000002', '20 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-002', 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10003, 'DEMO-NCC-003', 'Nhà cung cấp máy tính Demo 03', 'Đại diện Demo 03', 'demo.ncc03@example.com', '0912000003', '30 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-003', 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10004, 'DEMO-NCC-004', 'Nhà cung cấp máy tính Demo 04', 'Đại diện Demo 04', 'demo.ncc04@example.com', '0912000004', '40 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-004', 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10005, 'DEMO-NCC-005', 'Nhà cung cấp máy tính Demo 05', 'Đại diện Demo 05', 'demo.ncc05@example.com', '0912000005', '50 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-005', 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10006, 'DEMO-NCC-006', 'Nhà cung cấp máy tính Demo 06', 'Đại diện Demo 06', 'demo.ncc06@example.com', '0912000006', '60 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-006', 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10007, 'DEMO-NCC-007', 'Nhà cung cấp máy tính Demo 07', 'Đại diện Demo 07', 'demo.ncc07@example.com', '0912000007', '70 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-007', 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10008, 'DEMO-NCC-008', 'Nhà cung cấp máy tính Demo 08', 'Đại diện Demo 08', 'demo.ncc08@example.com', '0912000008', '80 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-008', 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10009, 'DEMO-NCC-009', 'Nhà cung cấp máy tính Demo 09', 'Đại diện Demo 09', 'demo.ncc09@example.com', '0912000009', '90 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-009', 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10010, 'DEMO-NCC-010', 'Nhà cung cấp máy tính Demo 10', 'Đại diện Demo 10', 'demo.ncc10@example.com', '0912000010', '100 Đường Kho Vận Demo, Hà Nội', 'DEMO-MST-010', 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00');
+
+-- ---------------------------------------------------------------------------
+-- 03. PRODUCT CATALOG
+-- ---------------------------------------------------------------------------
 
 -- categories: 10 records
 INSERT INTO categories (id, name, slug, description, status, parent_id, is_deleted, created_by, created_date, last_modified_by, last_modified_date) VALUES
@@ -90,16 +108,16 @@ INSERT INTO products (id, name, code, description, specification, product_type, 
     (10008, 'Tản nhiệt Corsair Demo', 'DEMO-SP-008', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Tản nhiệt tương thích LGA1700', 0, 2, 'demo-cooler-corsair', 'https://example.com/demo/products/cooler-corsair.jpg', 10006, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 840000),
     (10009, 'Màn hình Dell 24 inch Demo', 'DEMO-SP-009', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Màn hình IPS; 24 inch', 0, 2, 'demo-monitor-dell-24', 'https://example.com/demo/products/monitor-dell-24.jpg', 10009, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 3000000),
     (10010, 'Bàn phím Logitech Demo', 'DEMO-SP-010', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Bàn phím USB', 0, 2, 'demo-keyboard-logitech', 'https://example.com/demo/products/keyboard-logitech.jpg', 10007, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 480000),
-    (10011, 'Laptop ASUS Demo 01', 'DEMO-SP-011', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Laptop; RAM 16GB; SSD 512GB', 1, 2, 'demo-laptop-01', 'https://example.com/demo/products/laptop-01.jpg', 10005, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 15600000),
-    (10012, 'Laptop MSI Demo 02', 'DEMO-SP-012', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Laptop; RAM 16GB; SSD 512GB', 1, 2, 'demo-laptop-02', 'https://example.com/demo/products/laptop-02.jpg', 10002, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 16800000),
-    (10013, 'Laptop Lenovo Demo 03', 'DEMO-SP-013', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Laptop; RAM 16GB; SSD 512GB', 1, 2, 'demo-laptop-03', 'https://example.com/demo/products/laptop-03.jpg', 10008, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 18000000),
-    (10014, 'Laptop Dell Demo 04', 'DEMO-SP-014', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Laptop; RAM 16GB; SSD 512GB', 1, 2, 'demo-laptop-04', 'https://example.com/demo/products/laptop-04.jpg', 10009, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 19200000),
-    (10015, 'Laptop HP Demo 05', 'DEMO-SP-015', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Laptop; RAM 16GB; SSD 512GB', 1, 2, 'demo-laptop-05', 'https://example.com/demo/products/laptop-05.jpg', 10010, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 20400000),
-    (10016, 'Bộ nâng cấp PC CPU và Main Demo 01', 'DEMO-SP-016', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Bộ nâng cấp gồm CPU và mainboard; không phải máy hoàn chỉnh', 2, 2, 'demo-pc-upgrade-01', 'https://example.com/demo/products/pc-upgrade-01.jpg', 10002, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 7800000),
-    (10017, 'Bộ nâng cấp PC CPU và Main Demo 02', 'DEMO-SP-017', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Bộ nâng cấp gồm CPU và mainboard; không phải máy hoàn chỉnh', 2, 2, 'demo-pc-upgrade-02', 'https://example.com/demo/products/pc-upgrade-02.jpg', 10002, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 7800000),
-    (10018, 'Bộ nâng cấp PC CPU và Main Demo 03', 'DEMO-SP-018', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Bộ nâng cấp gồm CPU và mainboard; không phải máy hoàn chỉnh', 2, 2, 'demo-pc-upgrade-03', 'https://example.com/demo/products/pc-upgrade-03.jpg', 10002, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 7800000),
-    (10019, 'Bộ nâng cấp PC CPU và Main Demo 04', 'DEMO-SP-019', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Bộ nâng cấp gồm CPU và mainboard; không phải máy hoàn chỉnh', 2, 2, 'demo-pc-upgrade-04', 'https://example.com/demo/products/pc-upgrade-04.jpg', 10002, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 7800000),
-    (10020, 'Bộ nâng cấp PC CPU và Main Demo 05', 'DEMO-SP-020', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Bộ nâng cấp gồm CPU và mainboard; không phải máy hoàn chỉnh', 2, 2, 'demo-pc-upgrade-05', 'https://example.com/demo/products/pc-upgrade-05.jpg', 10002, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 7800000);
+    (10011, 'Laptop ASUS Demo 01', 'DEMO-SP-011', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Laptop; RAM 16GB; SSD 512GB', 0, 2, 'demo-laptop-01', 'https://example.com/demo/products/laptop-01.jpg', 10005, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 15600000),
+    (10012, 'Laptop MSI Demo 02', 'DEMO-SP-012', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Laptop; RAM 16GB; SSD 512GB', 0, 2, 'demo-laptop-02', 'https://example.com/demo/products/laptop-02.jpg', 10002, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 16800000),
+    (10013, 'Laptop Lenovo Demo 03', 'DEMO-SP-013', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Laptop; RAM 16GB; SSD 512GB', 0, 2, 'demo-laptop-03', 'https://example.com/demo/products/laptop-03.jpg', 10008, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 18000000),
+    (10014, 'Laptop Dell Demo 04', 'DEMO-SP-014', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Laptop; RAM 16GB; SSD 512GB', 0, 2, 'demo-laptop-04', 'https://example.com/demo/products/laptop-04.jpg', 10009, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 19200000),
+    (10015, 'Laptop HP Demo 05', 'DEMO-SP-015', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Laptop; RAM 16GB; SSD 512GB', 0, 2, 'demo-laptop-05', 'https://example.com/demo/products/laptop-05.jpg', 10010, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 20400000),
+    (10016, 'Bộ nâng cấp PC CPU và Main Demo 01', 'DEMO-SP-016', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Bộ nâng cấp gồm CPU và mainboard; không phải máy hoàn chỉnh', 1, 2, 'demo-pc-upgrade-01', 'https://example.com/demo/products/pc-upgrade-01.jpg', 10002, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 7800000),
+    (10017, 'Bộ nâng cấp PC CPU và Main Demo 02', 'DEMO-SP-017', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Bộ nâng cấp gồm CPU và mainboard; không phải máy hoàn chỉnh', 1, 2, 'demo-pc-upgrade-02', 'https://example.com/demo/products/pc-upgrade-02.jpg', 10002, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 7800000),
+    (10018, 'Bộ nâng cấp PC CPU và Main Demo 03', 'DEMO-SP-018', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Bộ nâng cấp gồm CPU và mainboard; không phải máy hoàn chỉnh', 1, 2, 'demo-pc-upgrade-03', 'https://example.com/demo/products/pc-upgrade-03.jpg', 10002, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 7800000),
+    (10019, 'Bộ nâng cấp PC CPU và Main Demo 04', 'DEMO-SP-019', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Bộ nâng cấp gồm CPU và mainboard; không phải máy hoàn chỉnh', 1, 2, 'demo-pc-upgrade-04', 'https://example.com/demo/products/pc-upgrade-04.jpg', 10002, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 7800000),
+    (10020, 'Bộ nâng cấp PC CPU và Main Demo 05', 'DEMO-SP-020', 'Sản phẩm minh họa, giá và cấu hình dùng để kiểm thử.', 'Bộ nâng cấp gồm CPU và mainboard; không phải máy hoàn chỉnh', 1, 2, 'demo-pc-upgrade-05', 'https://example.com/demo/products/pc-upgrade-05.jpg', 10002, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00', 7800000);
 
 -- category_products: 20 records
 INSERT INTO category_products (id, product_id, category_id, is_primary) VALUES
@@ -137,28 +155,10 @@ INSERT INTO building_pc (id, pc_id, product_id, quantity) VALUES
     (10009, 10020, 10001, 1),
     (10010, 10020, 10002, 1);
 
--- product_price: 20 records
-INSERT INTO product_price (id, product_id, price, effective_from, effective_to, is_present_price, created_by, created_date) VALUES
-    (10001, 10001, 4800000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10002, 10002, 3000000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10003, 10003, 720000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10004, 10004, 1680000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10005, 10005, 9600000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10006, 10006, 1440000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10007, 10007, 1200000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10008, 10008, 840000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10009, 10009, 3000000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10010, 10010, 480000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10011, 10011, 15600000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10012, 10012, 16800000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10013, 10013, 18000000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10014, 10014, 19200000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10015, 10015, 20400000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10016, 10016, 7800000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10017, 10017, 7800000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10018, 10018, 7800000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10019, 10019, 7800000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00'),
-    (10020, 10020, 7800000, '2026-07-01 08:00:00', NULL, 1, 10002, '2026-07-01 08:00:00');
+
+-- ---------------------------------------------------------------------------
+-- 04. PURCHASING & INVENTORY
+-- ---------------------------------------------------------------------------
 
 -- purchase_orders: 10 records
 INSERT INTO purchase_orders (id, code, name, supplier_id, order_date, expected_date, status, description, total_amount, is_deleted, created_by, created_date, last_modified_by, last_modified_date) VALUES
@@ -281,6 +281,10 @@ INSERT INTO purchase_return_items (id, purchase_return_id, product_serial_id, un
     (10009, 10009, 10009, 8000000, 10002, '2026-10-12 08:00:00', 10002, '2026-10-12 08:00:00'),
     (10010, 10010, 10010, 1200000, 10002, '2026-10-13 08:00:00', 10002, '2026-10-13 08:00:00');
 
+-- ---------------------------------------------------------------------------
+-- 05. SALES
+-- ---------------------------------------------------------------------------
+
 -- carts: 10 records
 INSERT INTO carts (id, customer_id, quantity) VALUES
     (10001, 10011, 1),
@@ -346,6 +350,10 @@ INSERT INTO order_item_serial (id, order_item_id, product_serial_id, created_dat
     (10009, 10009, 10009, '2026-09-19 08:00:00'),
     (10010, 10010, 10010, '2026-09-20 08:00:00');
 
+-- ---------------------------------------------------------------------------
+-- 06. BILLING & PAYMENTS
+-- ---------------------------------------------------------------------------
+
 -- payment_methods: 10 records
 INSERT INTO payment_methods (id, code, name, type, bank_name, account_number, status, is_deleted, created_by, created_date, last_modified_by, last_modified_date) VALUES
     (10001, 'DEMO-CASH', 'Tiền mặt Demo', 0, NULL, NULL, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
@@ -385,18 +393,22 @@ INSERT INTO payment (id, order_id, payment_method_id, amount, transaction_code, 
     (10009, 10009, 10009, 9590000, 'DEMO-TXN-009', 1, '2026-09-18 09:00:00', '2026-09-18 08:00:00', '2026-09-18 09:00:00'),
     (10010, 10010, 10010, 1430000, 'DEMO-TXN-010', 1, '2026-09-19 09:00:00', '2026-09-19 08:00:00', '2026-09-19 09:00:00');
 
+-- ---------------------------------------------------------------------------
+-- 07. WARRANTY & TECHNICAL SERVICE
+-- ---------------------------------------------------------------------------
+
 -- warranty_policy: 10 records
 INSERT INTO warranty_policy (id, name, duration_days, description, target_type, target_id, status, is_deleted, created_by, created_date, last_modified_by, last_modified_date) VALUES
-    (10001, 'Bảo hành Demo sản phẩm 01', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 'PRODUCT', 10001, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10002, 'Bảo hành Demo sản phẩm 02', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 'PRODUCT', 10002, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10003, 'Bảo hành Demo sản phẩm 03', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 'PRODUCT', 10003, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10004, 'Bảo hành Demo sản phẩm 04', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 'PRODUCT', 10004, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10005, 'Bảo hành Demo sản phẩm 05', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 'PRODUCT', 10005, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10006, 'Bảo hành Demo sản phẩm 06', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 'PRODUCT', 10006, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10007, 'Bảo hành Demo sản phẩm 07', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 'PRODUCT', 10007, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10008, 'Bảo hành Demo sản phẩm 08', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 'PRODUCT', 10008, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10009, 'Bảo hành Demo sản phẩm 09', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 'PRODUCT', 10009, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10010, 'Bảo hành Demo sản phẩm 10', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 'PRODUCT', 10010, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00');
+    (10001, 'Bảo hành Demo sản phẩm 01', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 1, 10001, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10002, 'Bảo hành Demo sản phẩm 02', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 1, 10002, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10003, 'Bảo hành Demo sản phẩm 03', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 1, 10003, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10004, 'Bảo hành Demo sản phẩm 04', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 1, 10004, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10005, 'Bảo hành Demo sản phẩm 05', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 1, 10005, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10006, 'Bảo hành Demo sản phẩm 06', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 1, 10006, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10007, 'Bảo hành Demo sản phẩm 07', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 1, 10007, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10008, 'Bảo hành Demo sản phẩm 08', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 1, 10008, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10009, 'Bảo hành Demo sản phẩm 09', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 1, 10009, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10010, 'Bảo hành Demo sản phẩm 10', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 1, 10010, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00');
 
 -- warranty: 10 records
 INSERT INTO warranty (id, order_item_serial_id, warranty_policy_id, start_date, end_date, status, note, created_by, created_date, last_modified_by, last_modified_date) VALUES
@@ -450,28 +462,32 @@ INSERT INTO warranty_part_serial (id, warranty_part_id, product_serial_id) VALUE
     (10009, 10009, 10019),
     (10010, 10010, 10020);
 
+-- ---------------------------------------------------------------------------
+-- 08. DELIVERY, REVIEWS & FAVORITES
+-- ---------------------------------------------------------------------------
+
 -- delivery: 20 records
 INSERT INTO delivery (id, resource_type, resource_id, tracking_code, carrier_name, shipping_fee, status, shipped_date, shipped_by, delivered_date) VALUES
-    (10001, 'ORDER', 10001, 'DEMO-SHIP-001', 'Vận chuyển Demo', 0, 2, '2026-09-11 08:00:00', 10004, '2026-09-13 08:00:00'),
-    (10011, 'PURCHASE_RETURN', 10001, 'DEMO-RETURN-001', 'Vận chuyển Demo', 0, 2, '2026-10-04 08:00:00', 10004, '2026-10-05 08:00:00'),
-    (10002, 'ORDER', 10002, 'DEMO-SHIP-002', 'Vận chuyển Demo', 0, 2, '2026-09-12 08:00:00', 10003, '2026-09-14 08:00:00'),
-    (10012, 'PURCHASE_RETURN', 10002, 'DEMO-RETURN-002', 'Vận chuyển Demo', 0, 2, '2026-10-05 08:00:00', 10003, '2026-10-06 08:00:00'),
-    (10003, 'ORDER', 10003, 'DEMO-SHIP-003', 'Vận chuyển Demo', 0, 2, '2026-09-13 08:00:00', 10004, '2026-09-15 08:00:00'),
-    (10013, 'PURCHASE_RETURN', 10003, 'DEMO-RETURN-003', 'Vận chuyển Demo', 0, 2, '2026-10-06 08:00:00', 10004, '2026-10-07 08:00:00'),
-    (10004, 'ORDER', 10004, 'DEMO-SHIP-004', 'Vận chuyển Demo', 0, 2, '2026-09-14 08:00:00', 10003, '2026-09-16 08:00:00'),
-    (10014, 'PURCHASE_RETURN', 10004, 'DEMO-RETURN-004', 'Vận chuyển Demo', 0, 2, '2026-10-07 08:00:00', 10003, '2026-10-08 08:00:00'),
-    (10005, 'ORDER', 10005, 'DEMO-SHIP-005', 'Vận chuyển Demo', 0, 2, '2026-09-15 08:00:00', 10004, '2026-09-17 08:00:00'),
-    (10015, 'PURCHASE_RETURN', 10005, 'DEMO-RETURN-005', 'Vận chuyển Demo', 0, 2, '2026-10-08 08:00:00', 10004, '2026-10-09 08:00:00'),
-    (10006, 'ORDER', 10006, 'DEMO-SHIP-006', 'Vận chuyển Demo', 0, 2, '2026-09-16 08:00:00', 10003, '2026-09-18 08:00:00'),
-    (10016, 'PURCHASE_RETURN', 10006, 'DEMO-RETURN-006', 'Vận chuyển Demo', 0, 2, '2026-10-09 08:00:00', 10003, '2026-10-10 08:00:00'),
-    (10007, 'ORDER', 10007, 'DEMO-SHIP-007', 'Vận chuyển Demo', 0, 2, '2026-09-17 08:00:00', 10004, '2026-09-19 08:00:00'),
-    (10017, 'PURCHASE_RETURN', 10007, 'DEMO-RETURN-007', 'Vận chuyển Demo', 0, 2, '2026-10-10 08:00:00', 10004, '2026-10-11 08:00:00'),
-    (10008, 'ORDER', 10008, 'DEMO-SHIP-008', 'Vận chuyển Demo', 0, 2, '2026-09-18 08:00:00', 10003, '2026-09-20 08:00:00'),
-    (10018, 'PURCHASE_RETURN', 10008, 'DEMO-RETURN-008', 'Vận chuyển Demo', 0, 2, '2026-10-11 08:00:00', 10003, '2026-10-12 08:00:00'),
-    (10009, 'ORDER', 10009, 'DEMO-SHIP-009', 'Vận chuyển Demo', 0, 2, '2026-09-19 08:00:00', 10004, '2026-09-21 08:00:00'),
-    (10019, 'PURCHASE_RETURN', 10009, 'DEMO-RETURN-009', 'Vận chuyển Demo', 0, 2, '2026-10-12 08:00:00', 10004, '2026-10-13 08:00:00'),
-    (10010, 'ORDER', 10010, 'DEMO-SHIP-010', 'Vận chuyển Demo', 0, 2, '2026-09-20 08:00:00', 10003, '2026-09-22 08:00:00'),
-    (10020, 'PURCHASE_RETURN', 10010, 'DEMO-RETURN-010', 'Vận chuyển Demo', 0, 2, '2026-10-13 08:00:00', 10003, '2026-10-14 08:00:00');
+    (10001, 0, 10001, 'DEMO-SHIP-001', 'Vận chuyển Demo', 0, 2, '2026-09-11 08:00:00', 10004, '2026-09-13 08:00:00'),
+    (10011, 1, 10001, 'DEMO-RETURN-001', 'Vận chuyển Demo', 0, 2, '2026-10-04 08:00:00', 10004, '2026-10-05 08:00:00'),
+    (10002, 0, 10002, 'DEMO-SHIP-002', 'Vận chuyển Demo', 0, 2, '2026-09-12 08:00:00', 10003, '2026-09-14 08:00:00'),
+    (10012, 1, 10002, 'DEMO-RETURN-002', 'Vận chuyển Demo', 0, 2, '2026-10-05 08:00:00', 10003, '2026-10-06 08:00:00'),
+    (10003, 0, 10003, 'DEMO-SHIP-003', 'Vận chuyển Demo', 0, 2, '2026-09-13 08:00:00', 10004, '2026-09-15 08:00:00'),
+    (10013, 1, 10003, 'DEMO-RETURN-003', 'Vận chuyển Demo', 0, 2, '2026-10-06 08:00:00', 10004, '2026-10-07 08:00:00'),
+    (10004, 0, 10004, 'DEMO-SHIP-004', 'Vận chuyển Demo', 0, 2, '2026-09-14 08:00:00', 10003, '2026-09-16 08:00:00'),
+    (10014, 1, 10004, 'DEMO-RETURN-004', 'Vận chuyển Demo', 0, 2, '2026-10-07 08:00:00', 10003, '2026-10-08 08:00:00'),
+    (10005, 0, 10005, 'DEMO-SHIP-005', 'Vận chuyển Demo', 0, 2, '2026-09-15 08:00:00', 10004, '2026-09-17 08:00:00'),
+    (10015, 1, 10005, 'DEMO-RETURN-005', 'Vận chuyển Demo', 0, 2, '2026-10-08 08:00:00', 10004, '2026-10-09 08:00:00'),
+    (10006, 0, 10006, 'DEMO-SHIP-006', 'Vận chuyển Demo', 0, 2, '2026-09-16 08:00:00', 10003, '2026-09-18 08:00:00'),
+    (10016, 1, 10006, 'DEMO-RETURN-006', 'Vận chuyển Demo', 0, 2, '2026-10-09 08:00:00', 10003, '2026-10-10 08:00:00'),
+    (10007, 0, 10007, 'DEMO-SHIP-007', 'Vận chuyển Demo', 0, 2, '2026-09-17 08:00:00', 10004, '2026-09-19 08:00:00'),
+    (10017, 1, 10007, 'DEMO-RETURN-007', 'Vận chuyển Demo', 0, 2, '2026-10-10 08:00:00', 10004, '2026-10-11 08:00:00'),
+    (10008, 0, 10008, 'DEMO-SHIP-008', 'Vận chuyển Demo', 0, 2, '2026-09-18 08:00:00', 10003, '2026-09-20 08:00:00'),
+    (10018, 1, 10008, 'DEMO-RETURN-008', 'Vận chuyển Demo', 0, 2, '2026-10-11 08:00:00', 10003, '2026-10-12 08:00:00'),
+    (10009, 0, 10009, 'DEMO-SHIP-009', 'Vận chuyển Demo', 0, 2, '2026-09-19 08:00:00', 10004, '2026-09-21 08:00:00'),
+    (10019, 1, 10009, 'DEMO-RETURN-009', 'Vận chuyển Demo', 0, 2, '2026-10-12 08:00:00', 10004, '2026-10-13 08:00:00'),
+    (10010, 0, 10010, 'DEMO-SHIP-010', 'Vận chuyển Demo', 0, 2, '2026-09-20 08:00:00', 10003, '2026-09-22 08:00:00'),
+    (10020, 1, 10010, 'DEMO-RETURN-010', 'Vận chuyển Demo', 0, 2, '2026-10-13 08:00:00', 10003, '2026-10-14 08:00:00');
 
 -- product_reviews: 10 records
 INSERT INTO product_reviews (id, product_id, customer_id, rating, title, content, status, created_at, updated_at) VALUES

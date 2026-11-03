@@ -4,14 +4,14 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
 @Converter(autoApply = true)
-public class ProductTypeConverter implements AttributeConverter<ProductType, Integer> {
+public class ProductTypeConverter implements AttributeConverter<ProductType, Byte> {
     @Override
-    public Integer convertToDatabaseColumn(ProductType attribute) {
-        return attribute == null ? null : attribute.getValue();
+    public Byte convertToDatabaseColumn(ProductType attribute) {
+        return attribute == null ? null : (byte) attribute.getValue();
     }
 
     @Override
-    public ProductType convertToEntityAttribute(Integer value) {
-        return value == null ? null : ProductType.fromValue(value);
+    public ProductType convertToEntityAttribute(Byte value) {
+        return value == null ? null : ProductType.fromValue(Byte.toUnsignedInt(value));
     }
 }

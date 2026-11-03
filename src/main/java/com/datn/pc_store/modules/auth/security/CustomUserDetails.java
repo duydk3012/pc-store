@@ -21,6 +21,10 @@ public class CustomUserDetails implements UserDetails {
         return user.getId();
     }
 
+    public boolean isEmailVerified() {
+        return user.isEmailVerified();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));

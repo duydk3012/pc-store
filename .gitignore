@@ -1,7 +1,9 @@
-### env ###
 .env
 document/
 docs/
+readme/
+*.xlsx
+
 Danh_Sach_API_He_Thong_PC_Store.xlsx
 bao_cao_kiem_thu_luong_nhap_hang.xlsx
 HELP.md

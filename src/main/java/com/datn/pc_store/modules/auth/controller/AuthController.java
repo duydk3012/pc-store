@@ -111,7 +111,8 @@ public class AuthController {
                 principal.getId(),
                 principal.getUsername(),
                 principal.getAuthorities().stream()
-                        .map(Object::toString).toList()
+                        .map(Object::toString).toList(),
+                principal.isEmailVerified()
         );
     }
 }
