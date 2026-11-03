@@ -16,7 +16,7 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor
 @Builder
 @SQLDelete(sql = "UPDATE users SET is_deleted = 1 WHERE id = ?")
-@SQLRestriction("is_deleted = false")
+@SQLRestriction("is_deleted = 0")
 public class User extends BaseEntity {
 
     @Id
@@ -35,6 +35,10 @@ public class User extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(name = "email_verified", nullable = false)
+    @Builder.Default
+    private boolean emailVerified = false;
+
     @Column(name = "phone_number", length = 15)
     private String phoneNumber;
 
@@ -44,8 +48,7 @@ public class User extends BaseEntity {
     @Column(name = "citizen_identification_card", length = 20)
     private String citizenIdentificationCard;
 
-    @Enumerated(EnumType.STRING)
-    @Column(length = 30, nullable = false)
+    @Column(nullable = false)
     private RoleType role;
 
     @Column(name = "status", nullable = false)

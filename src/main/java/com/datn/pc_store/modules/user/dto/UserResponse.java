@@ -27,6 +27,8 @@ public class UserResponse {
     @Schema(description = "Địa chỉ email", example = "customer01@example.com")
     private String email;
 
+    private boolean emailVerified;
+
     @Schema(description = "Số điện thoại", example = "0912345678")
     private String phoneNumber;
 

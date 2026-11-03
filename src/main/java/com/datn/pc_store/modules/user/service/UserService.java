@@ -85,6 +85,9 @@ public class UserService {
                 || (req.getRole() != null && req.getRole() != user.getRole())
                 || (req.getStatus() != null && req.getStatus() != user.getStatus());
 
+        if (!user.getEmail().equalsIgnoreCase(req.getEmail())) {
+            user.setEmailVerified(false);
+        }
         userMapper.updateEntityFromDto(req, user);
         if (req.getPassword() != null) {
             user.setPasswordHash(passwordEncoder.encode(req.getPassword()));

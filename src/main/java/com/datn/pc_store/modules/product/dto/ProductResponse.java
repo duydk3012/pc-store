@@ -42,8 +42,6 @@ public class ProductResponse {
     private Long primaryCategoryId;
     @Schema(description = "Giá bán hiện tại lưu trực tiếp ở products.price, VND; null nếu chưa gán giá", example = "12990000")
     private Long price;
-    @Schema(description = "ID phiên bản giá hiện tại; null nếu chưa có giá đang hiệu lực", example = "1")
-    private Long priceId;
     @Schema(description = "Danh sách linh kiện cấu hình (áp dụng cho sản phẩm loại PC); null nếu là sản phẩm khác")
     private List<BuildingPcItemResponse> items;
     @Schema(description = "Thời gian tạo")
