@@ -24,6 +24,10 @@ public interface ProductSerialRepository extends JpaRepository<ProductSerial, Lo
 
     List<ProductSerial> findAllBySerialNumber(String serialNumber);
 
+    List<ProductSerial> findAllBySerialNumberIn(Collection<String> serialNumbers);
+
+    List<ProductSerial> findAllByIdIn(Collection<Long> ids);
+
     @Query("SELECT ps.serialNumber FROM ProductSerial ps WHERE ps.serialNumber IN :serialNumbers AND ps.isTerminated = false")
     Set<String> findActiveExistingSerialNumbers(@Param("serialNumbers") Collection<String> serialNumbers);
 

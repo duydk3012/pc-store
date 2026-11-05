@@ -88,4 +88,26 @@ public class ProductSerialService {
         );
         return PageResponse.of(page.map(goodsReceiptMapper::toSerialResponse));
     }
+
+    @Transactional
+    public ProductSerialResponse updateStatus(Long id, ProductSerialStatus newStatus) {
+        ProductSerial ps = productSerialRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Serial sản phẩm", "id", id));
+        ps.setStatus(newStatus);
+        ProductSerial saved = productSerialRepository.save(ps);
+        return goodsReceiptMapper.toSerialResponse(saved);
+    }
+
+    @Transactional
+    public List<ProductSerialResponse> bulkUpdateStatus(List<String> serialNumbers, ProductSerialStatus newStatus) {
+        if (serialNumbers == null || serialNumbers.isEmpty()) {
+            return List.of();
+        }
+        List<ProductSerial> serials = productSerialRepository.findAllBySerialNumberIn(serialNumbers);
+        for (ProductSerial ps : serials) {
+            ps.setStatus(newStatus);
+        }
+        List<ProductSerial> saved = productSerialRepository.saveAll(serials);
+        return saved.stream().map(goodsReceiptMapper::toSerialResponse).toList();
+    }
 }
