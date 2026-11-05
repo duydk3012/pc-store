@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/product-serials")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'STAFF_WAREHOUSE', 'STAFF_TECH')")
+@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'STAFF_WAREHOUSE', 'STAFF_TECH', 'STAFF_SALES')")
 @Tag(name = "Product Serials", description = "Tra cứu serial sản phẩm. Yêu cầu Bearer token")
 public class ProductSerialController {
 
