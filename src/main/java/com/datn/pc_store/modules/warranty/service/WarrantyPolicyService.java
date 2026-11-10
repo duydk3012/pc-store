@@ -4,6 +4,7 @@ import com.datn.pc_store.common.dto.PageResponse;
 import com.datn.pc_store.common.exception.BadRequestException;
 import com.datn.pc_store.common.exception.ResourceNotFoundException;
 import com.datn.pc_store.modules.category.repository.CategoryRepository;
+import com.datn.pc_store.modules.brand.repository.BrandRepository;
 import com.datn.pc_store.modules.product.repository.ProductRepository;
 import com.datn.pc_store.modules.warranty.dto.*;
 import com.datn.pc_store.modules.warranty.entity.WarrantPolicy;
@@ -27,6 +28,7 @@ public class WarrantyPolicyService {
     private final WarrantyPolicyMapper mapper;
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
+    private final BrandRepository brandRepository;
 
     public PageResponse<WarrantyPolicyResponse> getAllPolicies(String keyword, WarrantyPolicyStatus status,
             WarrantyPolicyTargetType targetType, Long targetId, Pageable pageable) {
@@ -97,8 +99,10 @@ public class WarrantyPolicyService {
             if (!categoryRepository.existsById(id)) throw new ResourceNotFoundException("Danh mục", "id", id);
         } else if (type == WarrantyPolicyTargetType.PRODUCT) {
             if (!productRepository.existsById(id)) throw new ResourceNotFoundException("Sản phẩm", "id", id);
+        } else if (type == WarrantyPolicyTargetType.BRAND) {
+            if (!brandRepository.existsById(id)) throw new ResourceNotFoundException("Thương hiệu", "id", id);
         } else {
-            throw new BadRequestException("targetType chỉ nhận 0 (danh mục) hoặc 1 (sản phẩm)");
+            throw new BadRequestException("targetType chỉ nhận 0 (danh mục), 1 (sản phẩm) hoặc 2 (thương hiệu)");
         }
     }
 }

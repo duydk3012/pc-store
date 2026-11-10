@@ -74,7 +74,7 @@ class WarrantyPolicyIntegrationTest {
             mvc.perform(post(base).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest());
         }
-        for (int type : new int[]{0, 1}) {
+        for (int type : new int[]{0, 1, 2}) {
             mvc.perform(post(base).contentType(MediaType.APPLICATION_JSON)
                     .content("{\"name\":\"X\",\"durationDays\":365,\"targetType\":%d,\"targetId\":999999}".formatted(type)))
                     .andExpect(status().isNotFound());
@@ -106,6 +106,35 @@ class WarrantyPolicyIntegrationTest {
         var policy = repository.findById(id).orElseThrow();
         assertThat(policy.getTargetType()).isNull();
         assertThat(policy.getTargetId()).isNull();
+    }
+
+    @Test void brandScopeSupportsCreateUpdateAndFiltering() throws Exception {
+        var brand = com.datn.pc_store.modules.brand.entity.Brand.builder()
+                .name("Intel").slug("warranty-intel").build();
+        em.persist(brand);
+        em.flush();
+        mvc.perform(post(base).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Brand policy\",\"durationDays\":365,\"targetType\":2,\"targetId\":%d}"
+                        .formatted(brand.getId())))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.targetType").value("BRAND"));
+        em.flush(); em.clear();
+        Long id = repository.findAll().getFirst().getId();
+        assertThat(repository.findById(id).orElseThrow().getTargetType()).isEqualTo(WarrantyPolicyTargetType.BRAND);
+        assertThat(jdbc.queryForObject("select target_type from warranty_policy where id = ?", Integer.class, id)).isEqualTo(2);
+        for (String type : new String[]{"BRAND"}) {
+            mvc.perform(get(base).param("targetType", type).param("targetId", brand.getId().toString()))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(1));
+        }
+        mvc.perform(get(base).param("targetType", "PRODUCT"))
+                .andExpect(jsonPath("$.totalElements").value(0));
+        mvc.perform(put(base + "/" + id).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Brand policy updated\",\"durationDays\":730,\"targetType\":\"BRAND\",\"targetId\":%d}"
+                        .formatted(brand.getId())))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.targetType").value("BRAND"));
+        mvc.perform(put(base + "/" + id).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Invalid brand\",\"durationDays\":365,\"targetType\":2,\"targetId\":999999}"))
+                .andExpect(status().isNotFound());
+        mvc.perform(delete(base + "/" + id)).andExpect(status().isNoContent());
     }
 
     @Test void requiresAdmin() throws Exception {

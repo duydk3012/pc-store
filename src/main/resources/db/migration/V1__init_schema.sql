@@ -533,7 +533,7 @@ CREATE TABLE warranty_policy (
     name                         VARCHAR(255)      NOT NULL,
     duration_days                INT               NOT NULL DEFAULT 365,
     description                  VARCHAR(500)      NULL,
-    target_type                  TINYINT UNSIGNED  NULL COMMENT '0: category, 1: product',
+    target_type                  TINYINT UNSIGNED  NULL COMMENT '0: category, 1: product, 2: brand',
     target_id                    BIGINT            NULL,
     status                       TINYINT UNSIGNED  NOT NULL DEFAULT 1 COMMENT '0: inactive, 1: active',
     is_deleted                   TINYINT UNSIGNED  NOT NULL DEFAULT 0 COMMENT '0: false, 1: true',
@@ -542,7 +542,7 @@ CREATE TABLE warranty_policy (
     last_modified_by             BIGINT            NULL,
     last_modified_date           DATETIME(6)       NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     PRIMARY KEY (id),
-    CONSTRAINT chk_warranty_policy_target_type CHECK (target_type IN (0, 1)),
+    CONSTRAINT chk_warranty_policy_target_type CHECK (target_type IN (0, 1, 2)),
     CONSTRAINT chk_warranty_policy_status CHECK (status BETWEEN 0 AND 1),
     CONSTRAINT chk_warranty_policy_is_deleted CHECK (is_deleted IN (0, 1))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -634,10 +634,10 @@ CREATE INDEX idx_wps_part ON warranty_part_serial (warranty_part_id);
 CREATE INDEX idx_wps_serial ON warranty_part_serial (product_serial_id);
 
 -- ============================================================================
--- 08. DELIVERY, REVIEWS & FAVORITES
+-- 08. DELIVERY, REVIEWS, COMMENTS & FAVORITES
 -- ============================================================================
 
--- Module Delivery, Product Reviews & Favorites: delivery, product_reviews, product_favorites
+-- Module Delivery, Product Reviews, Comments & Favorites: delivery, product_reviews, product_comments, product_favorites
 
 CREATE TABLE delivery (
     id                           BIGINT            NOT NULL AUTO_INCREMENT,
@@ -647,11 +647,13 @@ CREATE TABLE delivery (
     carrier_name                 VARCHAR(255)      NULL,
     shipping_fee                 BIGINT            NOT NULL DEFAULT 0,
     status                       TINYINT UNSIGNED  NOT NULL DEFAULT 0 COMMENT '0: picked_up, 1: in_transit, 2: delivered, 3: returned',
-    shipped_date                 DATETIME(6)       NULL,
-    shipped_by                   BIGINT            NULL,
-    delivered_date               DATETIME(6)       NULL,
+    created_by                   BIGINT            NULL,
+    created_date                 DATETIME(6)       NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    last_modified_by             BIGINT            NULL,
+    last_modified_date           DATETIME(6)       NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     PRIMARY KEY (id),
-    CONSTRAINT fk_delivery_shipped_by FOREIGN KEY (shipped_by) REFERENCES users (id) ON DELETE SET NULL,
+    CONSTRAINT fk_delivery_created_by FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE SET NULL,
+    CONSTRAINT fk_delivery_last_modified_by FOREIGN KEY (last_modified_by) REFERENCES users (id) ON DELETE SET NULL,
     CONSTRAINT chk_delivery_resource_type CHECK (resource_type IN (0, 1)),
     CONSTRAINT chk_delivery_status CHECK (status BETWEEN 0 AND 3)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -660,25 +662,42 @@ CREATE INDEX idx_delivery_resource ON delivery (resource_type, resource_id);
 CREATE INDEX idx_delivery_tracking ON delivery (tracking_code);
 CREATE INDEX idx_delivery_status ON delivery (status);
 
+
 CREATE TABLE product_reviews (
     id                           BIGINT            NOT NULL AUTO_INCREMENT,
     product_id                   BIGINT            NOT NULL,
     customer_id                  BIGINT            NOT NULL,
     rating                       TINYINT UNSIGNED  NOT NULL,
-    title                        VARCHAR(100)      NULL,
     content                      TEXT              NULL,
-    status                       TINYINT UNSIGNED  NOT NULL DEFAULT 1 COMMENT '0: hidden, 1: visible',
-    created_at                   DATETIME(6)       NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-    updated_at                   DATETIME(6)       NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+    created_date                 DATETIME(6)       NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    last_modified_date           DATETIME(6)       NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
     PRIMARY KEY (id),
+    CONSTRAINT uk_pr_product_customer UNIQUE (product_id, customer_id),
     CONSTRAINT fk_pr_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
     CONSTRAINT fk_pr_customer FOREIGN KEY (customer_id) REFERENCES users (id) ON DELETE CASCADE,
-    CONSTRAINT chk_review_rating CHECK (rating BETWEEN 1 AND 5),
-    CONSTRAINT chk_product_reviews_status CHECK (status BETWEEN 0 AND 1)
+    CONSTRAINT chk_review_rating CHECK (rating BETWEEN 0 AND 5)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE INDEX idx_pr_product_user ON product_reviews (product_id, customer_id);
-CREATE INDEX idx_pr_status ON product_reviews (status);
+CREATE TABLE product_comments (
+    id                           BIGINT            NOT NULL AUTO_INCREMENT,
+    product_id                   BIGINT            NOT NULL,
+    created_by                  BIGINT            NOT NULL,
+    parent_id                    BIGINT            NULL,
+    content                      TEXT              NOT NULL,
+    last_modified_by             BIGINT            NULL,
+    is_deleted                   TINYINT(1)        NOT NULL DEFAULT 0,
+    created_date                 DATETIME(6)       NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    last_modified_date           DATETIME(6)       NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+    PRIMARY KEY (id),
+    CONSTRAINT fk_pc_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
+    CONSTRAINT fk_pc_created_by FOREIGN KEY (created_by) REFERENCES users (id),
+    CONSTRAINT fk_pc_last_modified_by FOREIGN KEY (last_modified_by) REFERENCES users (id),
+    CONSTRAINT fk_pc_parent FOREIGN KEY (parent_id) REFERENCES product_comments (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE INDEX idx_pc_product_parent_created ON product_comments (product_id, parent_id, created_date);
+CREATE INDEX idx_pc_created_by ON product_comments (created_by);
+CREATE INDEX idx_pc_parent ON product_comments (parent_id);
 
 CREATE TABLE product_favorites (
     id                           BIGINT            NOT NULL AUTO_INCREMENT,
