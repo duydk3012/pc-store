@@ -16,7 +16,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -25,7 +24,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/purchase-returns")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'STAFF_WAREHOUSE')")
 @Tag(name = "Purchase Returns", description = "Quản lý hoàn trả hàng cho nhà cung cấp. Yêu cầu Bearer token")
 public class PurchaseReturnController {
 

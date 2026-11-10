@@ -20,7 +20,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +30,6 @@ import java.net.URI;
 @RestController
 @RequestMapping("/api/deliveries")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'STAFF_WAREHOUSE')")
 @Tag(name = "Deliveries", description = "Quản lý giao hàng cho khách và hoàn trả tới nhà cung cấp")
 public class DeliveryController {
     private final DeliveryService deliveryService;
