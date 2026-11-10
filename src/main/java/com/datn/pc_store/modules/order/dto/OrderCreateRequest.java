@@ -42,6 +42,6 @@ public class OrderCreateRequest {
     @NotEmpty(message = "Đơn hàng phải có ít nhất 1 sản phẩm")
     @Valid
     @Schema(description = "Danh sách sản phẩm đặt mua")
-    private List<OrderItemRequest> items;
+    private List<@jakarta.validation.constraints.NotNull OrderItemRequest> items;
 }
 

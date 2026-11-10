@@ -8,6 +8,10 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface OrderItemSerialRepository extends JpaRepository<OrderItemSerial, Long> {
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select s from OrderItemSerial s where s.id = (select w.orderItemSerialId from Warranty w where w.id = :warrantyId)")
+    java.util.Optional<OrderItemSerial> lockForWarranty(Long warrantyId);
+
     List<OrderItemSerial> findAllByOrderItemId(Long orderItemId);
 
     @Query("SELECT ois FROM OrderItemSerial ois JOIN OrderItem oi ON oi.id = ois.orderItemId WHERE oi.order.id = :orderId")

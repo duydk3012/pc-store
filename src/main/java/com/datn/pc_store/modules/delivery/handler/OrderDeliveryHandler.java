@@ -7,6 +7,8 @@ import com.datn.pc_store.modules.delivery.enums.DeliveryStatus;
 import com.datn.pc_store.modules.order.entity.Order;
 import com.datn.pc_store.modules.order.enums.OrderStatus;
 import com.datn.pc_store.modules.order.repository.OrderRepository;
+import com.datn.pc_store.modules.order.service.OrderSerialService;
+import com.datn.pc_store.modules.warranty.service.WarrantyActivationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +16,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OrderDeliveryHandler implements DeliveryResourceHandler {
     private final OrderRepository orderRepository;
+    private final OrderSerialService orderSerialService;
+    private final WarrantyActivationService warrantyActivationService;
 
     @Override
     public DeliveryResourceType getResourceType() {
@@ -27,6 +31,7 @@ public class OrderDeliveryHandler implements DeliveryResourceHandler {
             throw new BadRequestException("Chỉ có thể lập vận đơn cho đơn hàng CONFIRMED hoặc PROCESSING.");
         }
         order.setStatus(OrderStatus.PROCESSING);
+        orderSerialService.markDelivering(resourceId);
     }
 
     @Override
@@ -40,7 +45,14 @@ public class OrderDeliveryHandler implements DeliveryResourceHandler {
         if (order.getStatus() != OrderStatus.PROCESSING) {
             throw new BadRequestException("Đơn hàng phải ở trạng thái PROCESSING để kết thúc giao hàng.");
         }
-        order.setStatus(status == DeliveryStatus.DELIVERED ? OrderStatus.COMPLETED : OrderStatus.CANCELLED);
+        if (status == DeliveryStatus.DELIVERED) {
+            order.setStatus(OrderStatus.COMPLETED);
+            orderSerialService.markSold(resourceId);
+            warrantyActivationService.activateForCompletedOrder(order);
+        } else {
+            order.setStatus(OrderStatus.CANCELLED);
+            orderSerialService.release(resourceId);
+        }
     }
 
     private Order lockOrder(Long id) {
