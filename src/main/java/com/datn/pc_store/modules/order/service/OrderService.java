@@ -4,6 +4,8 @@ import com.datn.pc_store.common.dto.PageResponse;
 import com.datn.pc_store.common.exception.BadRequestException;
 import com.datn.pc_store.common.exception.DuplicateResourceException;
 import com.datn.pc_store.common.exception.ResourceNotFoundException;
+import com.datn.pc_store.modules.delivery.enums.DeliveryResourceType;
+import com.datn.pc_store.modules.delivery.service.DeliveryService;
 import com.datn.pc_store.modules.goodsreceipt.entity.ProductSerial;
 import com.datn.pc_store.modules.order.dto.*;
 import com.datn.pc_store.modules.order.entity.Order;
@@ -44,6 +46,7 @@ public class OrderService {
     );
 
     private final OrderRepository orderRepository;
+    private final DeliveryService deliveryService;
     private final OrderItemSerialRepository orderItemSerialRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
@@ -246,6 +249,11 @@ public class OrderService {
             }
         }
 
+        if (currentStatus == OrderStatus.PROCESSING
+                && (newStatus == OrderStatus.COMPLETED || newStatus == OrderStatus.CANCELLED || newStatus == OrderStatus.RETURNED)) {
+            throw new BadRequestException("Đơn đã bắt đầu giao; hãy cập nhật trạng thái vận đơn để hoàn tất hoặc hủy giao.");
+        }
+
         // Kiểm tra logic luồng chuyển đổi trạng thái hợp lệ
         validateStatusTransition(currentStatus, newStatus);
 
@@ -262,8 +270,12 @@ public class OrderService {
             throw new AccessDeniedException("Chỉ Quản trị viên mới có quyền xóa đơn hàng.");
         }
 
-        Order order = orderRepository.findById(id)
+        Order order = orderRepository.findForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Đơn hàng", "id", id));
+
+        if (deliveryService.existsForResource(DeliveryResourceType.ORDER, id)) {
+            throw new BadRequestException("Không thể xóa đơn hàng đã có vận đơn.");
+        }
 
         if (order.getStatus() == OrderStatus.COMPLETED) {
             throw new BadRequestException("Không thể xóa đơn hàng đã hoàn tất giao dịch.");
@@ -307,8 +319,7 @@ public class OrderService {
             }
         }
 
-        // Cho phép chuyển đổi nếu cần xử lý đặc biệt bởi nhân viên quản trị
-        log.warn("Chuyển trạng thái đơn hàng không theo chuỗi tiêu chuẩn: {} -> {}", from, to);
+        throw new BadRequestException("Không thể chuyển đơn hàng từ " + from + " sang " + to + ".");
     }
 
     private OrderResponse mapOrderWithSerials(Order order) {

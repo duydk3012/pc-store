@@ -1,6 +1,7 @@
 package com.datn.pc_store.modules.purchasereturn.entity;
 
 import com.datn.pc_store.common.entity.BaseEntity;
+import com.datn.pc_store.modules.goodsreceipt.enums.ProductSerialStatus;
 import com.datn.pc_store.modules.purchasereturn.enums.PurchaseReturnStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -53,4 +54,14 @@ public class PurchaseReturn extends BaseEntity {
     @BatchSize(size = 50)
     @Builder.Default
     private List<PurchaseReturnItem> items = new ArrayList<>();
+
+    public void startDelivery() {
+        status = PurchaseReturnStatus.DELIVERING;
+        if (returnDate == null) returnDate = Instant.now();
+        for (PurchaseReturnItem item : items) {
+            if (item.getProductSerial() != null) {
+                item.getProductSerial().setStatus(ProductSerialStatus.RETURNING);
+            }
+        }
+    }
 }

@@ -97,7 +97,7 @@ public class OrderController {
     @PatchMapping("/{id}/status")
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Cập nhật trạng thái đơn hàng",
-            description = "Nhân viên/Admin cập nhật trạng thái đơn; Khách hàng có thể hủy đơn khi đơn còn PENDING.")
+            description = "Nhân viên cập nhật trạng thái đơn. Khi bàn giao, gửi thông tin vận chuyển qua POST /api/deliveries. Khách hàng có thể hủy đơn khi đơn còn PENDING.")
     public ResponseEntity<OrderResponse> updateStatus(
             @Parameter(description = "ID đơn hàng") @PathVariable Long id,
             @Valid @RequestBody OrderStatusUpdateRequest req

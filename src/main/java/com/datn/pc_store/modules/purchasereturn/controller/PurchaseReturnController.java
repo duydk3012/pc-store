@@ -86,7 +86,7 @@ public class PurchaseReturnController {
 
     @PatchMapping("/{id}/status")
     @Operation(summary = "Chuyển trạng thái phiếu hoàn trả",
-            description = "Chuyển trạng thái theo quy trình: DRAFT -> PENDING -> DELIVERING -> RETURNED (hoặc CANCELLED). Tự động cập nhật đồng bộ trạng thái vòng đời của các serial.")
+            description = "Nhân viên cập nhật trạng thái phiếu hoàn. Khi bàn giao, gửi thông tin vận chuyển qua POST /api/deliveries. Kết quả giao được ghi nhận qua trạng thái vận đơn.")
     public ResponseEntity<PurchaseReturnResponse> updateStatus(
             @Parameter(description = "ID phiếu hoàn trả") @PathVariable Long id,
             @Valid @RequestBody PurchaseReturnStatusUpdateRequest req
