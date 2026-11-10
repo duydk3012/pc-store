@@ -35,6 +35,7 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        String reviews = "/api/products/{productId}/reviews";
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
@@ -42,11 +43,17 @@ public class SecurityConfig {
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .authorizeHttpRequests(a -> a
-                        // Public authentication, API documentation and catalog reads.
+                        // Public authentication and API documentation.
                         .requestMatchers("/api/auth/login", "/api/auth/register",
                                 "/api/auth/refresh", "/api/auth/logout",
                                 "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+
+                        // Authorize reviews before the broader public catalog matcher.
+                        // ReviewService checks the completed purchase and review ownership on writes.
+                        .requestMatchers(HttpMethod.GET, reviews, reviews + "/{id}").permitAll()
+                        .requestMatchers(reviews, reviews + "/**").authenticated()
+
                         .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/brands/**", "/api/products/**").permitAll()
 
                         // Administrative catalog, users, suppliers and warranty policies.
