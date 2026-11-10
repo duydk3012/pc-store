@@ -279,6 +279,10 @@ public class PurchaseReturnService {
         if (current == PurchaseReturnStatus.RETURNED) {
             throw conflict("Phiếu hoàn trả đã hoàn tất (RETURNED), không thể thay đổi trạng thái.");
         }
+        if (current == PurchaseReturnStatus.DELIVERING
+                && (target == PurchaseReturnStatus.RETURNED || target == PurchaseReturnStatus.CANCELLED)) {
+            throw conflict("Phiếu đang giao; hãy cập nhật trạng thái vận đơn để ghi nhận kết quả giao hàng.");
+        }
 
         boolean allowed = switch (current) {
             case DRAFT -> target == PurchaseReturnStatus.PENDING || target == PurchaseReturnStatus.CANCELLED;
@@ -310,15 +314,7 @@ public class PurchaseReturnService {
                 if (!isAdmin && !isManager && !isWarehouse) {
                     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền chuyển trạng thái giao hàng.");
                 }
-                for (PurchaseReturnItem item : pr.getItems()) {
-                    ProductSerial ps = item.getProductSerial();
-                    if (ps != null) {
-                        ps.setStatus(ProductSerialStatus.RETURNING);
-                    }
-                }
-                if (pr.getReturnDate() == null) {
-                    pr.setReturnDate(Instant.now());
-                }
+                pr.startDelivery();
             }
             case RETURNED -> {
                 if (!isAdmin && !isManager) {
