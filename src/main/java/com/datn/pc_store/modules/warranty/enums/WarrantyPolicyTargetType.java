@@ -5,10 +5,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 @Getter
-@Schema(description = "Đối tượng áp dụng chính sách bảo hành: CATEGORY (0), PRODUCT (1)")
+@Schema(description = "Đối tượng áp dụng chính sách bảo hành: CATEGORY (0), PRODUCT (1), BRAND (2)")
 public enum WarrantyPolicyTargetType {
     CATEGORY(0),
-    PRODUCT(1);
+    PRODUCT(1),
+    BRAND(2);
 
     private final int value;
 
@@ -23,10 +24,6 @@ public enum WarrantyPolicyTargetType {
             }
         }
         throw new IllegalArgumentException("Đối tượng áp dụng chính sách bảo hành không hợp lệ: " + value);
-    }
-
-    public static WarrantyPolicyTargetType fromValue(Object input) {
-        return fromJson(input);
     }
 
     @JsonCreator

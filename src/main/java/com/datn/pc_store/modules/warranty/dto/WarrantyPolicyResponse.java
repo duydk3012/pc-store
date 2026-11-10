@@ -27,9 +27,10 @@ public class WarrantyPolicyResponse {
 
     private Integer durationDays;
 
-    @Schema(description = "CATEGORY (0): danh mục, PRODUCT (1): sản phẩm; bỏ trống cùng targetId để áp dụng chung")
+    @Schema(description = "CATEGORY (0): danh mục, PRODUCT (1): sản phẩm, BRAND (2): thương hiệu; bỏ trống cùng targetId để áp dụng chung")
     private WarrantyPolicyTargetType targetType;
 
+    @Schema(description = "ID danh mục, sản phẩm hoặc thương hiệu tương ứng với targetType")
     private Long targetId;
 
 
