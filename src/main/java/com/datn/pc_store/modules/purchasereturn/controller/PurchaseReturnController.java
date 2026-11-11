@@ -16,7 +16,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -25,7 +24,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/purchase-returns")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'STAFF_WAREHOUSE')")
 @Tag(name = "Purchase Returns", description = "Quản lý hoàn trả hàng cho nhà cung cấp. Yêu cầu Bearer token")
 public class PurchaseReturnController {
 
@@ -86,7 +84,7 @@ public class PurchaseReturnController {
 
     @PatchMapping("/{id}/status")
     @Operation(summary = "Chuyển trạng thái phiếu hoàn trả",
-            description = "Chuyển trạng thái theo quy trình: DRAFT -> PENDING -> DELIVERING -> RETURNED (hoặc CANCELLED). Tự động cập nhật đồng bộ trạng thái vòng đời của các serial.")
+            description = "Nhân viên cập nhật trạng thái phiếu hoàn. Khi bàn giao, gửi thông tin vận chuyển qua POST /api/deliveries. Kết quả giao được ghi nhận qua trạng thái vận đơn.")
     public ResponseEntity<PurchaseReturnResponse> updateStatus(
             @Parameter(description = "ID phiếu hoàn trả") @PathVariable Long id,
             @Valid @RequestBody PurchaseReturnStatusUpdateRequest req

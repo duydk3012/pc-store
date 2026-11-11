@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -26,7 +25,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
-@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -37,6 +35,7 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        String reviews = "/api/products/{productId}/reviews";
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
@@ -44,12 +43,47 @@ public class SecurityConfig {
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .authorizeHttpRequests(a -> a
+                        // Public authentication and API documentation.
                         .requestMatchers("/api/auth/login", "/api/auth/register",
                                 "/api/auth/refresh", "/api/auth/logout",
                                 "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+
+                        // Authorize reviews before the broader public catalog matcher.
+                        // ReviewService checks the completed purchase and review ownership on writes.
+                        .requestMatchers(HttpMethod.GET, reviews, reviews + "/{id}").permitAll()
+                        .requestMatchers(reviews, reviews + "/**").authenticated()
+
                         .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/brands/**", "/api/products/**").permitAll()
+
+                        // Administrative catalog, users, suppliers and warranty policies.
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // Purchase orders: warehouse staff can read, managers can also modify.
+                        .requestMatchers(HttpMethod.GET, "/api/purchase-orders", "/api/purchase-orders/**")
+                        .hasAnyRole("ADMIN", "MANAGER", "STAFF_WAREHOUSE")
+                        .requestMatchers("/api/purchase-orders", "/api/purchase-orders/**")
+                        .hasAnyRole("ADMIN", "MANAGER")
+
+                        // Warehouse documents and deliveries.
+                        .requestMatchers("/api/goods-receipts", "/api/goods-receipts/**",
+                                "/api/purchase-returns", "/api/purchase-returns/**",
+                                "/api/deliveries", "/api/deliveries/**")
+                        .hasAnyRole("ADMIN", "MANAGER", "STAFF_WAREHOUSE")
+                        .requestMatchers("/api/product-serials", "/api/product-serials/**")
+                        .hasAnyRole("ADMIN", "MANAGER", "STAFF_WAREHOUSE", "STAFF_TECH", "STAFF_SALES")
+
+                        // Warranty lookup and intake.
+                        .requestMatchers("/api/warranties", "/api/warranties/**",
+                                "/api/warranty-requests", "/api/warranty-requests/**")
+                        .hasAnyRole("ADMIN", "MANAGER", "STAFF_SALES")
+
+                        // Orders: ownership and allowed transitions are checked by OrderService.
+                        .requestMatchers(HttpMethod.DELETE, "/api/orders", "/api/orders/**")
+                        .hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers("/api/orders", "/api/orders/**").authenticated()
+
+                        // Remaining auth operations and comment writes require a logged-in user.
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

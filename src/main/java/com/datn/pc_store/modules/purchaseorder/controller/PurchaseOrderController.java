@@ -14,7 +14,6 @@ import org.springframework.data.domain.*;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.*;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -22,7 +21,6 @@ import java.time.Instant;
 @RestController
 @RequestMapping("/api/purchase-orders")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'STAFF_WAREHOUSE')")
 @Tag(name = "Purchase Orders", description = "Quản lý đơn nhập hàng: Admin/Quản lý lập và xử lý đơn; nhân viên kho được tra cứu. Yêu cầu Bearer token")
 public class PurchaseOrderController {
     private final PurchaseOrderService purchaseOrderService;
@@ -61,14 +59,12 @@ public class PurchaseOrderController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Lập đơn nhập hàng nháp", description = "Tạo DRAFT, có thể chưa có mặt hàng. Hệ thống tự tính subtotal và totalAmount, khởi tạo quantityReceived bằng 0; không nhận các giá trị này từ client. Nhà cung cấp phải ACTIVE, sản phẩm không INACTIVE. Trả về 201 khi thành công, 400 khi dữ liệu sai, 404 nếu đối tượng liên quan không tồn tại, 409 nếu mã đơn trùng.")
     public ResponseEntity<PurchaseOrderResponse> createOrder(@Valid @RequestBody PurchaseOrderCreateRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(purchaseOrderService.createOrder(req));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Chỉnh sửa đơn nhập nháp", description = "Chỉ sửa DRAFT chưa có phiếu nhập và chưa nhận hàng. Thay thế toàn bộ items, tự tính lại tổng tiền; items null/rỗng sẽ xóa danh sách cũ. orderDate giữ nguyên nếu không gửi; các trường tùy chọn còn lại null sẽ xóa giá trị cũ. Không sửa trạng thái hoặc số lượng đã nhận qua API này. Trả về 409 nếu đơn không còn được sửa.")
     public ResponseEntity<PurchaseOrderResponse> updateOrder(
             @Parameter(description = "ID đơn nhập cần sửa") @PathVariable Long id,
@@ -78,7 +74,6 @@ public class PurchaseOrderController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Gửi duyệt, duyệt, hủy hoặc hoàn tất đơn nhập",
             description = "Luồng: DRAFT → PENDING → APPROVED → RECEIVED. Gửi/duyệt yêu cầu ít nhất một mặt hàng và dữ liệu liên quan còn hợp lệ. "
                     + "DRAFT/PENDING/APPROVED có thể chuyển CANCELLED nếu chưa nhận hàng và không có phiếu nhập PENDING/CONFIRMED. "
@@ -92,7 +87,6 @@ public class PurchaseOrderController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Xóa mềm đơn nhập nháp", description = "Chỉ xóa DRAFT chưa phát sinh phiếu nhập và chưa nhận hàng. Giữ chi tiết mặt hàng và mã đơn trong database để lưu lịch sử. Trả về 204 khi thành công, 404 nếu không tìm thấy, 409 nếu không được xóa.")
     public ResponseEntity<Void> deleteOrder(
             @Parameter(description = "ID đơn nhập cần xóa") @PathVariable Long id

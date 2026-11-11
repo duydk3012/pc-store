@@ -14,6 +14,14 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface ProductSerialRepository extends JpaRepository<ProductSerial, Long> {
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select ps from ProductSerial ps where ps.isTerminated = false and ps.serialNumber in :numbers order by ps.id")
+    List<ProductSerial> lockActiveBySerialNumbers(Collection<String> numbers);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select ps from ProductSerial ps where ps.id in :ids order by ps.id")
+    List<ProductSerial> lockByIds(Collection<Long> ids);
+
     Optional<ProductSerial> findFirstBySerialNumberAndIsTerminatedFalse(String serialNumber);
 
     Optional<ProductSerial> findFirstBySerialNumberOrderByCreatedDateDesc(String serialNumber);

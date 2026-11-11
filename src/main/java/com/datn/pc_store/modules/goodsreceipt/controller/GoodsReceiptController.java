@@ -16,7 +16,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -24,7 +23,6 @@ import java.time.Instant;
 @RestController
 @RequestMapping("/api/goods-receipts")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'STAFF_WAREHOUSE')")
 @Tag(name = "Goods Receipts", description = "Quản lý phiếu nhập hàng và serial sản phẩm. Yêu cầu Bearer token")
 public class GoodsReceiptController {
 

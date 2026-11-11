@@ -2,7 +2,7 @@
 -- Flyway loads this file once, after the initial schema.
 
 -- ============================================================================
--- DEMO DATA: 400 records across 32 tables; account_challenges starts empty
+-- DEMO DATA: 391 records across 32 tables; account_challenges starts empty
 -- ============================================================================
 
 -- Uses fixed IDs >= 10001. Intended for a fresh development database.
@@ -397,7 +397,7 @@ INSERT INTO payment (id, order_id, payment_method_id, amount, transaction_code, 
 -- 07. WARRANTY & TECHNICAL SERVICE
 -- ---------------------------------------------------------------------------
 
--- warranty_policy: 10 records
+-- warranty_policy: 11 records
 INSERT INTO warranty_policy (id, name, duration_days, description, target_type, target_id, status, is_deleted, created_by, created_date, last_modified_by, last_modified_date) VALUES
     (10001, 'Bảo hành Demo sản phẩm 01', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 1, 10001, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
     (10002, 'Bảo hành Demo sản phẩm 02', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 1, 10002, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
@@ -408,7 +408,8 @@ INSERT INTO warranty_policy (id, name, duration_days, description, target_type, 
     (10007, 'Bảo hành Demo sản phẩm 07', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 1, 10007, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
     (10008, 'Bảo hành Demo sản phẩm 08', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 1, 10008, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
     (10009, 'Bảo hành Demo sản phẩm 09', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 1, 10009, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
-    (10010, 'Bảo hành Demo sản phẩm 10', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 1, 10010, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00');
+    (10010, 'Bảo hành Demo sản phẩm 10', 365, 'Bảo hành thay thế trong dữ liệu minh họa.', 1, 10010, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00'),
+    (10011, 'Bảo hành Demo thương hiệu Intel', 365, 'Chính sách bảo hành áp dụng cho thương hiệu Intel.', 2, 10001, 1, 0, 10002, '2026-07-01 08:00:00', 10002, '2026-07-01 08:00:00');
 
 -- warranty: 10 records
 INSERT INTO warranty (id, order_item_serial_id, warranty_policy_id, start_date, end_date, status, note, created_by, created_date, last_modified_by, last_modified_date) VALUES
@@ -463,44 +464,57 @@ INSERT INTO warranty_part_serial (id, warranty_part_id, product_serial_id) VALUE
     (10010, 10010, 10020);
 
 -- ---------------------------------------------------------------------------
--- 08. DELIVERY, REVIEWS & FAVORITES
+-- 08. DELIVERY, REVIEWS, COMMENTS & FAVORITES
 -- ---------------------------------------------------------------------------
 
 -- delivery: 20 records
-INSERT INTO delivery (id, resource_type, resource_id, tracking_code, carrier_name, shipping_fee, status, shipped_date, shipped_by, delivered_date) VALUES
-    (10001, 0, 10001, 'DEMO-SHIP-001', 'Vận chuyển Demo', 0, 2, '2026-09-11 08:00:00', 10004, '2026-09-13 08:00:00'),
-    (10011, 1, 10001, 'DEMO-RETURN-001', 'Vận chuyển Demo', 0, 2, '2026-10-04 08:00:00', 10004, '2026-10-05 08:00:00'),
-    (10002, 0, 10002, 'DEMO-SHIP-002', 'Vận chuyển Demo', 0, 2, '2026-09-12 08:00:00', 10003, '2026-09-14 08:00:00'),
-    (10012, 1, 10002, 'DEMO-RETURN-002', 'Vận chuyển Demo', 0, 2, '2026-10-05 08:00:00', 10003, '2026-10-06 08:00:00'),
-    (10003, 0, 10003, 'DEMO-SHIP-003', 'Vận chuyển Demo', 0, 2, '2026-09-13 08:00:00', 10004, '2026-09-15 08:00:00'),
-    (10013, 1, 10003, 'DEMO-RETURN-003', 'Vận chuyển Demo', 0, 2, '2026-10-06 08:00:00', 10004, '2026-10-07 08:00:00'),
-    (10004, 0, 10004, 'DEMO-SHIP-004', 'Vận chuyển Demo', 0, 2, '2026-09-14 08:00:00', 10003, '2026-09-16 08:00:00'),
-    (10014, 1, 10004, 'DEMO-RETURN-004', 'Vận chuyển Demo', 0, 2, '2026-10-07 08:00:00', 10003, '2026-10-08 08:00:00'),
-    (10005, 0, 10005, 'DEMO-SHIP-005', 'Vận chuyển Demo', 0, 2, '2026-09-15 08:00:00', 10004, '2026-09-17 08:00:00'),
-    (10015, 1, 10005, 'DEMO-RETURN-005', 'Vận chuyển Demo', 0, 2, '2026-10-08 08:00:00', 10004, '2026-10-09 08:00:00'),
-    (10006, 0, 10006, 'DEMO-SHIP-006', 'Vận chuyển Demo', 0, 2, '2026-09-16 08:00:00', 10003, '2026-09-18 08:00:00'),
-    (10016, 1, 10006, 'DEMO-RETURN-006', 'Vận chuyển Demo', 0, 2, '2026-10-09 08:00:00', 10003, '2026-10-10 08:00:00'),
-    (10007, 0, 10007, 'DEMO-SHIP-007', 'Vận chuyển Demo', 0, 2, '2026-09-17 08:00:00', 10004, '2026-09-19 08:00:00'),
-    (10017, 1, 10007, 'DEMO-RETURN-007', 'Vận chuyển Demo', 0, 2, '2026-10-10 08:00:00', 10004, '2026-10-11 08:00:00'),
-    (10008, 0, 10008, 'DEMO-SHIP-008', 'Vận chuyển Demo', 0, 2, '2026-09-18 08:00:00', 10003, '2026-09-20 08:00:00'),
-    (10018, 1, 10008, 'DEMO-RETURN-008', 'Vận chuyển Demo', 0, 2, '2026-10-11 08:00:00', 10003, '2026-10-12 08:00:00'),
-    (10009, 0, 10009, 'DEMO-SHIP-009', 'Vận chuyển Demo', 0, 2, '2026-09-19 08:00:00', 10004, '2026-09-21 08:00:00'),
-    (10019, 1, 10009, 'DEMO-RETURN-009', 'Vận chuyển Demo', 0, 2, '2026-10-12 08:00:00', 10004, '2026-10-13 08:00:00'),
-    (10010, 0, 10010, 'DEMO-SHIP-010', 'Vận chuyển Demo', 0, 2, '2026-09-20 08:00:00', 10003, '2026-09-22 08:00:00'),
-    (10020, 1, 10010, 'DEMO-RETURN-010', 'Vận chuyển Demo', 0, 2, '2026-10-13 08:00:00', 10003, '2026-10-14 08:00:00');
+INSERT INTO delivery (id, resource_type, resource_id, tracking_code, carrier_name, shipping_fee, status, created_by, created_date, last_modified_by, last_modified_date) VALUES
+    (10001, 0, 10001, 'DEMO-SHIP-001', 'Vận chuyển Demo', 0, 2, 10004, '2026-09-11 08:00:00', 10004, '2026-09-13 08:00:00'),
+    (10011, 1, 10001, 'DEMO-RETURN-001', 'Vận chuyển Demo', 0, 2, 10004, '2026-10-04 08:00:00', 10004, '2026-10-05 08:00:00'),
+    (10002, 0, 10002, 'DEMO-SHIP-002', 'Vận chuyển Demo', 0, 2, 10003, '2026-09-12 08:00:00', 10003, '2026-09-14 08:00:00'),
+    (10012, 1, 10002, 'DEMO-RETURN-002', 'Vận chuyển Demo', 0, 2, 10003, '2026-10-05 08:00:00', 10003, '2026-10-06 08:00:00'),
+    (10003, 0, 10003, 'DEMO-SHIP-003', 'Vận chuyển Demo', 0, 2, 10004, '2026-09-13 08:00:00', 10004, '2026-09-15 08:00:00'),
+    (10013, 1, 10003, 'DEMO-RETURN-003', 'Vận chuyển Demo', 0, 2, 10004, '2026-10-06 08:00:00', 10004, '2026-10-07 08:00:00'),
+    (10004, 0, 10004, 'DEMO-SHIP-004', 'Vận chuyển Demo', 0, 2, 10003, '2026-09-14 08:00:00', 10003, '2026-09-16 08:00:00'),
+    (10014, 1, 10004, 'DEMO-RETURN-004', 'Vận chuyển Demo', 0, 2, 10003, '2026-10-07 08:00:00', 10003, '2026-10-08 08:00:00'),
+    (10005, 0, 10005, 'DEMO-SHIP-005', 'Vận chuyển Demo', 0, 2, 10004, '2026-09-15 08:00:00', 10004, '2026-09-17 08:00:00'),
+    (10015, 1, 10005, 'DEMO-RETURN-005', 'Vận chuyển Demo', 0, 2, 10004, '2026-10-08 08:00:00', 10004, '2026-10-09 08:00:00'),
+    (10006, 0, 10006, 'DEMO-SHIP-006', 'Vận chuyển Demo', 0, 2, 10003, '2026-09-16 08:00:00', 10003, '2026-09-18 08:00:00'),
+    (10016, 1, 10006, 'DEMO-RETURN-006', 'Vận chuyển Demo', 0, 2, 10003, '2026-10-09 08:00:00', 10003, '2026-10-10 08:00:00'),
+    (10007, 0, 10007, 'DEMO-SHIP-007', 'Vận chuyển Demo', 0, 2, 10004, '2026-09-17 08:00:00', 10004, '2026-09-19 08:00:00'),
+    (10017, 1, 10007, 'DEMO-RETURN-007', 'Vận chuyển Demo', 0, 2, 10004, '2026-10-10 08:00:00', 10004, '2026-10-11 08:00:00'),
+    (10008, 0, 10008, 'DEMO-SHIP-008', 'Vận chuyển Demo', 0, 2, 10003, '2026-09-18 08:00:00', 10003, '2026-09-20 08:00:00'),
+    (10018, 1, 10008, 'DEMO-RETURN-008', 'Vận chuyển Demo', 0, 2, 10003, '2026-10-11 08:00:00', 10003, '2026-10-12 08:00:00'),
+    (10009, 0, 10009, 'DEMO-SHIP-009', 'Vận chuyển Demo', 0, 2, 10004, '2026-09-19 08:00:00', 10004, '2026-09-21 08:00:00'),
+    (10019, 1, 10009, 'DEMO-RETURN-009', 'Vận chuyển Demo', 0, 2, 10004, '2026-10-12 08:00:00', 10004, '2026-10-13 08:00:00'),
+    (10010, 0, 10010, 'DEMO-SHIP-010', 'Vận chuyển Demo', 0, 2, 10003, '2026-09-20 08:00:00', 10003, '2026-09-22 08:00:00'),
+    (10020, 1, 10010, 'DEMO-RETURN-010', 'Vận chuyển Demo', 0, 2, 10003, '2026-10-13 08:00:00', 10003, '2026-10-14 08:00:00');
 
 -- product_reviews: 10 records
-INSERT INTO product_reviews (id, product_id, customer_id, rating, title, content, status, created_at, updated_at) VALUES
-    (10001, 10001, 10011, 4, 'Đánh giá mua hàng Demo', 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', 1, '2026-10-04 08:00:00', '2026-10-04 08:00:00'),
-    (10002, 10002, 10012, 5, 'Đánh giá mua hàng Demo', 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', 1, '2026-10-05 08:00:00', '2026-10-05 08:00:00'),
-    (10003, 10003, 10013, 3, 'Đánh giá mua hàng Demo', 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', 1, '2026-10-06 08:00:00', '2026-10-06 08:00:00'),
-    (10004, 10004, 10014, 4, 'Đánh giá mua hàng Demo', 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', 1, '2026-10-07 08:00:00', '2026-10-07 08:00:00'),
-    (10005, 10003, 10015, 5, 'Đánh giá mua hàng Demo', 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', 1, '2026-10-08 08:00:00', '2026-10-08 08:00:00'),
-    (10006, 10004, 10016, 3, 'Đánh giá mua hàng Demo', 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', 1, '2026-10-09 08:00:00', '2026-10-09 08:00:00'),
-    (10007, 10005, 10017, 4, 'Đánh giá mua hàng Demo', 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', 1, '2026-10-10 08:00:00', '2026-10-10 08:00:00'),
-    (10008, 10006, 10018, 5, 'Đánh giá mua hàng Demo', 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', 1, '2026-10-11 08:00:00', '2026-10-11 08:00:00'),
-    (10009, 10005, 10019, 3, 'Đánh giá mua hàng Demo', 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', 1, '2026-10-12 08:00:00', '2026-10-12 08:00:00'),
-    (10010, 10006, 10020, 4, 'Đánh giá mua hàng Demo', 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', 1, '2026-10-13 08:00:00', '2026-10-13 08:00:00');
+INSERT INTO product_reviews (id, product_id, customer_id, rating, content, created_date, last_modified_date) VALUES
+    (10001, 10001, 10011, 4, 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', '2026-10-04 08:00:00', '2026-10-04 08:00:00'),
+    (10002, 10002, 10012, 5, 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', '2026-10-05 08:00:00', '2026-10-05 08:00:00'),
+    (10003, 10003, 10013, 3, 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', '2026-10-06 08:00:00', '2026-10-06 08:00:00'),
+    (10004, 10004, 10014, 4, 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', '2026-10-07 08:00:00', '2026-10-07 08:00:00'),
+    (10005, 10003, 10015, 5, 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', '2026-10-08 08:00:00', '2026-10-08 08:00:00'),
+    (10006, 10004, 10016, 3, 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', '2026-10-09 08:00:00', '2026-10-09 08:00:00'),
+    (10007, 10005, 10017, 4, 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', '2026-10-10 08:00:00', '2026-10-10 08:00:00'),
+    (10008, 10006, 10018, 5, 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', '2026-10-11 08:00:00', '2026-10-11 08:00:00'),
+    (10009, 10005, 10019, 3, 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', '2026-10-12 08:00:00', '2026-10-12 08:00:00'),
+    (10010, 10006, 10020, 4, 'Cửa hàng đã hỗ trợ đổi bảo hành. Nội dung này là dữ liệu kiểm thử.', '2026-10-13 08:00:00', '2026-10-13 08:00:00');
+
+-- product_comments: 10 records (5 root comments, 5 replies)
+INSERT INTO product_comments (id, product_id, created_by, last_modified_by, is_deleted, parent_id, content, created_date, last_modified_date) VALUES
+    (10001, 10001, 10011, 10011, 0, NULL, 'Sản phẩm Demo này còn hàng và được bảo hành bao lâu?', '2026-10-14 08:00:00', '2026-10-14 08:00:00'),
+    (10002, 10002, 10012, 10012, 0, NULL, 'Sản phẩm Demo này còn hàng và được bảo hành bao lâu?', '2026-10-15 08:00:00', '2026-10-15 08:00:00'),
+    (10003, 10003, 10013, 10013, 0, NULL, 'Sản phẩm Demo này còn hàng và được bảo hành bao lâu?', '2026-10-16 08:00:00', '2026-10-16 08:00:00'),
+    (10004, 10004, 10014, 10014, 0, NULL, 'Sản phẩm Demo này còn hàng và được bảo hành bao lâu?', '2026-10-17 08:00:00', '2026-10-17 08:00:00'),
+    (10005, 10005, 10015, 10015, 0, NULL, 'Sản phẩm Demo này còn hàng và được bảo hành bao lâu?', '2026-10-18 08:00:00', '2026-10-18 08:00:00'),
+    (10006, 10001, 10016, 10016, 0, 10001, 'Mình đã mua sản phẩm Demo này, cửa hàng có hỗ trợ bảo hành.', '2026-10-14 09:00:00', '2026-10-14 09:00:00'),
+    (10007, 10002, 10017, 10017, 0, 10002, 'Mình đã mua sản phẩm Demo này, cửa hàng có hỗ trợ bảo hành.', '2026-10-15 09:00:00', '2026-10-15 09:00:00'),
+    (10008, 10003, 10018, 10018, 0, 10003, 'Mình đã mua sản phẩm Demo này, cửa hàng có hỗ trợ bảo hành.', '2026-10-16 09:00:00', '2026-10-16 09:00:00'),
+    (10009, 10004, 10019, 10019, 0, 10004, 'Mình đã mua sản phẩm Demo này, cửa hàng có hỗ trợ bảo hành.', '2026-10-17 09:00:00', '2026-10-17 09:00:00'),
+    (10010, 10005, 10020, 10020, 0, 10005, 'Mình đã mua sản phẩm Demo này, cửa hàng có hỗ trợ bảo hành.', '2026-10-18 09:00:00', '2026-10-18 09:00:00');
 
 -- product_favorites: 10 records
 INSERT INTO product_favorites (id, customer_id, product_id, created_at) VALUES

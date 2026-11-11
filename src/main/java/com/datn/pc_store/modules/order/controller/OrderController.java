@@ -21,7 +21,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +36,6 @@ public class OrderController {
     private final OrderService orderService;
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Xem danh sách và tìm kiếm đơn hàng",
             description = "Tra cứu danh sách đơn hàng. Nhân viên/Admin xem được tất cả đơn; Khách hàng thông thường chỉ xem danh sách đơn của chính mình.")
     public ResponseEntity<PageResponse<OrderResponse>> getAllOrders(
@@ -66,7 +64,6 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Xem chi tiết đơn hàng theo ID",
             description = "Lấy đầy đủ thông tin đơn hàng, khách hàng, người nhận và danh sách mặt hàng đã đặt mua kèm mã serial.")
     public ResponseEntity<OrderResponse> getOrderById(
@@ -76,7 +73,6 @@ public class OrderController {
     }
 
     @GetMapping("/by-code/{code}")
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Xem chi tiết đơn hàng theo mã đơn",
             description = "Tra cứu đơn hàng qua mã duy nhất.")
     public ResponseEntity<OrderResponse> getOrderByCode(
@@ -86,16 +82,14 @@ public class OrderController {
     }
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "GĐ 1: Khởi tạo đơn hàng mới",
-            description = "Khách hàng đặt hàng trực tuyến hoặc Admin/Nhân viên bán hàng tạo đơn bán lẻ tại quầy.")
+    @Operation(summary = "Tạo đơn hàng mới",
+            description = "Khách hàng đặt hàng trực tuyến hoặc Admin/Nhân viên bán hàng tạo đơn bán tại quầy / hộ khách.")
     public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderCreateRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(orderService.createOrder(req, getCurrentUserId(), isStaffOrAdmin()));
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Cập nhật trạng thái đơn hàng",
             description = "Nhân viên/Admin cập nhật trạng thái đơn hàng (CONFIRMED, PROCESSING, COMPLETED, CANCELLED). Khách hàng có thể hủy đơn khi PENDING hoặc xác nhận nhận hàng khi PROCESSING.")
     public ResponseEntity<OrderResponse> updateStatus(
@@ -137,7 +131,6 @@ public class OrderController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Xóa đơn hàng",
             description = "Chỉ cho phép xóa đơn khi chưa hoàn tất, chưa xuất hóa đơn và chưa có bản ghi thanh toán.")
     public ResponseEntity<Void> deleteOrder(

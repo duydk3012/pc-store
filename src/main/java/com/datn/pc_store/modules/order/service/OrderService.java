@@ -4,6 +4,8 @@ import com.datn.pc_store.common.dto.PageResponse;
 import com.datn.pc_store.common.exception.BadRequestException;
 import com.datn.pc_store.common.exception.DuplicateResourceException;
 import com.datn.pc_store.common.exception.ResourceNotFoundException;
+import com.datn.pc_store.modules.delivery.enums.DeliveryResourceType;
+import com.datn.pc_store.modules.delivery.service.DeliveryService;
 import com.datn.pc_store.modules.goodsreceipt.entity.ProductSerial;
 import com.datn.pc_store.modules.goodsreceipt.enums.ProductSerialStatus;
 import com.datn.pc_store.modules.goodsreceipt.repository.ProductSerialRepository;
@@ -46,11 +48,14 @@ public class OrderService {
     );
 
     private final OrderRepository orderRepository;
+    private final DeliveryService deliveryService;
     private final OrderItemSerialRepository orderItemSerialRepository;
     private final ProductSerialRepository productSerialRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final OrderMapper orderMapper;
+    private final OrderSerialService orderSerialService;
+    private final com.datn.pc_store.modules.warranty.service.WarrantyActivationService warrantyActivationService;
 
     @Transactional(readOnly = true)
     public PageResponse<OrderResponse> getAllOrders(
@@ -219,6 +224,7 @@ public class OrderService {
         }
 
         Order saved = orderRepository.save(order);
+        orderSerialService.reserve(saved, req.getItems());
         log.info("Đã tạo đơn hàng mới id={}, code={}, userId={}, finalAmount={}",
                 saved.getId(), saved.getCode(), saved.getUserId(), saved.getFinalAmount());
 
@@ -254,8 +260,29 @@ public class OrderService {
             }
         }
 
+        if (newStatus == OrderStatus.COMPLETED
+                && (currentStatus == OrderStatus.PENDING || currentStatus == OrderStatus.CONFIRMED
+                    || currentStatus == OrderStatus.PROCESSING)) {
+            if (deliveryService.existsForResource(DeliveryResourceType.ORDER, id)) {
+                throw new BadRequestException("Đơn đã có vận đơn; hãy cập nhật vận đơn sang DELIVERED để hoàn tất.");
+            }
+            orderSerialService.markSold(id);
+            order.setStatus(OrderStatus.COMPLETED);
+            warrantyActivationService.activateForCompletedOrder(order);
+            return mapOrderWithSerials(orderRepository.save(order));
+        }
+
+        if (currentStatus == OrderStatus.PROCESSING
+                && (newStatus == OrderStatus.COMPLETED || newStatus == OrderStatus.CANCELLED || newStatus == OrderStatus.RETURNED)) {
+            throw new BadRequestException("Đơn đã bắt đầu giao; hãy cập nhật trạng thái vận đơn để hoàn tất hoặc hủy giao.");
+        }
+
         // Kiểm tra logic luồng chuyển đổi trạng thái hợp lệ
         validateStatusTransition(currentStatus, newStatus);
+
+        if (newStatus == OrderStatus.CANCELLED || newStatus == OrderStatus.REJECTED) {
+            orderSerialService.release(id);
+        }
 
         order.setStatus(newStatus);
         Order updated = orderRepository.save(order);
@@ -399,8 +426,12 @@ public class OrderService {
             throw new AccessDeniedException("Chỉ Quản trị viên mới có quyền xóa đơn hàng.");
         }
 
-        Order order = orderRepository.findById(id)
+        Order order = orderRepository.findForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Đơn hàng", "id", id));
+
+        if (deliveryService.existsForResource(DeliveryResourceType.ORDER, id)) {
+            throw new BadRequestException("Không thể xóa đơn hàng đã có vận đơn.");
+        }
 
         if (order.getStatus() == OrderStatus.COMPLETED) {
             throw new BadRequestException("Không thể xóa đơn hàng đã hoàn tất giao dịch.");
