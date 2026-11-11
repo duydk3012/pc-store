@@ -29,4 +29,7 @@ public class Warranty extends BaseEntity {
 
     @Column(nullable = false)
     private boolean status = true;
+
+    @Column(length = 500)
+    private String note;
 }
