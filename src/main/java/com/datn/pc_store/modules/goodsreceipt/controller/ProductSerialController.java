@@ -15,10 +15,13 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/product-serials")
 @RequiredArgsConstructor
-@Tag(name = "Product Serials", description = "Tra cứu serial sản phẩm. Yêu cầu Bearer token")
+@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'STAFF_WAREHOUSE', 'STAFF_TECH', 'STAFF_SALES')")
+@Tag(name = "Product Serials", description = "Tra cứu và cập nhật serial sản phẩm. Yêu cầu Bearer token")
 public class ProductSerialController {
 
     private final ProductSerialService productSerialService;
@@ -61,5 +64,23 @@ public class ProductSerialController {
             @ParameterObject @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         return ResponseEntity.ok(productSerialService.getActiveSerialsByProduct(productId, status, pageable));
+    }
+
+    @PatchMapping("/{id}/status")
+    @Operation(summary = "Cập nhật trạng thái serial sản phẩm", description = "Cập nhật trạng thái một serial: PACKING, DELIVERING, SOLD, IN_STOCK...")
+    public ResponseEntity<ProductSerialResponse> updateStatus(
+            @Parameter(description = "ID serial") @PathVariable Long id,
+            @Parameter(description = "Trạng thái mới") @RequestParam ProductSerialStatus status
+    ) {
+        return ResponseEntity.ok(productSerialService.updateStatus(id, status));
+    }
+
+    @PatchMapping("/bulk-status")
+    @Operation(summary = "Cập nhật trạng thái hàng loạt serial", description = "Cập nhật danh sách serial number sang trạng thái mới (VD: chuyển sang PACKING khi đóng gói, SOLD khi hoàn thành đơn)")
+    public ResponseEntity<List<ProductSerialResponse>> bulkUpdateStatus(
+            @RequestBody List<String> serialNumbers,
+            @RequestParam ProductSerialStatus status
+    ) {
+        return ResponseEntity.ok(productSerialService.bulkUpdateStatus(serialNumbers, status));
     }
 }

@@ -56,7 +56,12 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/brands/**", "/api/products/**").permitAll()
 
-                        // Administrative catalog, users, suppliers and warranty policies.
+                        // Warranty management for Admin, Manager, Tech, and Sales
+                        .requestMatchers("/api/admin/warranties/**", "/api/admin/warranty-requests/**",
+                                "/api/admin/warranty-parts/**", "/api/admin/warranty-policies/**")
+                        .hasAnyRole("ADMIN", "MANAGER", "STAFF_TECH", "STAFF_SALES")
+
+                        // Administrative catalog, users, suppliers and other admin endpoints.
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                         // Purchase orders: warehouse staff can read, managers can also modify.

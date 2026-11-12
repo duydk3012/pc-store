@@ -5,6 +5,7 @@ import com.datn.pc_store.modules.warranty.enums.WarrantyRequestStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import java.time.Instant;
 
 @Entity
 @Table(name = "warranty_request")
@@ -24,10 +25,22 @@ public class WarrantyRequest extends BaseEntity {
     @Column(nullable = false)
     private Long customerId;
 
+    @Column(name = "technician_id")
+    private Long technicianId;
+
     @Column(length = 500)
     private String issueDescription;
+
+    @Column(length = 500)
+    private String inspectionNotes;
+
+    @Column(length = 500)
+    private String solution;
 
     @Enumerated(EnumType.ORDINAL)
     @Column(nullable = false)
     private WarrantyRequestStatus status = WarrantyRequestStatus.PENDING;
+
+    @Column(name = "completed_at")
+    private Instant completedAt;
 }

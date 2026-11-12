@@ -4,6 +4,8 @@ import com.datn.pc_store.modules.warranty.dto.WarrantyResponse;
 import com.datn.pc_store.modules.warranty.entity.Warranty;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import java.util.List;
 
 public interface WarrantyRepository extends JpaRepository<Warranty, Long> {
@@ -27,7 +29,7 @@ public interface WarrantyRepository extends JpaRepository<Warranty, Long> {
         where oi.order_id = :orderId and not exists (
             select 1 from warranty w where w.order_item_serial_id = s.id and w.warranty_policy_id = wp.id)
         """, nativeQuery = true)
-    List<PolicyMatch> findUnissuedPolicies(Long orderId);
+    List<PolicyMatch> findUnissuedPolicies(@Param("orderId") Long orderId);
 
     @Query("""
         select new com.datn.pc_store.modules.warranty.dto.WarrantyResponse(
@@ -36,5 +38,14 @@ public interface WarrantyRepository extends JpaRepository<Warranty, Long> {
         join s.productSerial ps join OrderItem oi on oi.id = s.orderItemId
         where oi.order.id = :orderId order by oi.id, s.id, w.warrantyPolicyId
         """)
-    List<WarrantyResponse> findForOrder(Long orderId);
+    List<WarrantyResponse> findForOrder(@Param("orderId") Long orderId);
+
+    @Query("""
+        select w from Warranty w join OrderItemSerial s on s.id = w.orderItemSerialId
+        join s.productSerial ps
+        where lower(ps.serialNumber) = lower(:serialNumber)
+        """)
+    List<Warranty> findBySerialNumber(@Param("serialNumber") String serialNumber);
+
+    List<Warranty> findByOrderItemSerialId(Long orderItemSerialId);
 }

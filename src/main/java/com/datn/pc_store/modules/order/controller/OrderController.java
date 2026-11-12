@@ -2,6 +2,7 @@ package com.datn.pc_store.modules.order.controller;
 
 import com.datn.pc_store.common.dto.PageResponse;
 import com.datn.pc_store.modules.auth.security.CustomUserDetails;
+import com.datn.pc_store.modules.order.dto.OrderAssignSerialRequest;
 import com.datn.pc_store.modules.order.dto.OrderCreateRequest;
 import com.datn.pc_store.modules.order.dto.OrderResponse;
 import com.datn.pc_store.modules.order.dto.OrderStatusUpdateRequest;
@@ -29,7 +30,7 @@ import java.time.Instant;
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
-@Tag(name = "Orders", description = "Quản lý đơn đặt hàng bán lẻ / trực tuyến. Yêu cầu Bearer token")
+@Tag(name = "Orders", description = "Quản lý quy trình đặt hàng và bán hàng 4 giai đoạn. Yêu cầu Bearer token")
 public class OrderController {
 
     private final OrderService orderService;
@@ -55,7 +56,6 @@ public class OrderController {
         Long currentUserId = getCurrentUserId();
         boolean staffOrAdmin = isStaffOrAdmin();
 
-        // Nếu là khách hàng bình thường, chỉ xem đơn của chính mình
         Long effectiveUserId = staffOrAdmin ? userId : currentUserId;
 
         return ResponseEntity.ok(orderService.getAllOrders(
@@ -65,7 +65,7 @@ public class OrderController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Xem chi tiết đơn hàng theo ID",
-            description = "Lấy đầy đủ thông tin đơn hàng, khách hàng, người nhận và danh sách mặt hàng đã đặt mua.")
+            description = "Lấy đầy đủ thông tin đơn hàng, khách hàng, người nhận và danh sách mặt hàng đã đặt mua kèm mã serial.")
     public ResponseEntity<OrderResponse> getOrderById(
             @Parameter(description = "ID đơn hàng") @PathVariable Long id
     ) {
@@ -91,12 +91,43 @@ public class OrderController {
 
     @PatchMapping("/{id}/status")
     @Operation(summary = "Cập nhật trạng thái đơn hàng",
-            description = "Nhân viên cập nhật trạng thái đơn. Khi bàn giao, gửi thông tin vận chuyển qua POST /api/deliveries. Khách hàng có thể hủy đơn khi đơn còn PENDING.")
+            description = "Nhân viên/Admin cập nhật trạng thái đơn hàng (CONFIRMED, PROCESSING, COMPLETED, CANCELLED). Khách hàng có thể hủy đơn khi PENDING hoặc xác nhận nhận hàng khi PROCESSING.")
     public ResponseEntity<OrderResponse> updateStatus(
             @Parameter(description = "ID đơn hàng") @PathVariable Long id,
             @Valid @RequestBody OrderStatusUpdateRequest req
     ) {
         return ResponseEntity.ok(orderService.updateStatus(id, req.getStatus(), getCurrentUserId(), isStaffOrAdmin()));
+    }
+
+    @PostMapping("/{id}/assign-serials")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'STAFF_WAREHOUSE', 'STAFF_SALES')")
+    @Operation(summary = "GĐ 3: Quét mã Serial định danh & đóng gói sản phẩm",
+            description = "Nhân viên kho quét gán mã serial cho các sản phẩm trong đơn hàng. Các serial sẽ tự động chuyển sang trạng thái PACKING (Đang đóng gói).")
+    public ResponseEntity<OrderResponse> assignSerials(
+            @Parameter(description = "ID đơn hàng") @PathVariable Long id,
+            @Valid @RequestBody OrderAssignSerialRequest req
+    ) {
+        return ResponseEntity.ok(orderService.assignSerialsToOrder(id, req.getItemSerials()));
+    }
+
+    @PostMapping("/{id}/handover")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'STAFF_WAREHOUSE')")
+    @Operation(summary = "GĐ 3 Bước 5: Bàn giao đơn hàng cho ĐVVC ngoài",
+            description = "Bàn giao kiện hàng cho đối tác vận chuyển, chuyển trạng thái serial sang DELIVERING (Đang giao).")
+    public ResponseEntity<OrderResponse> handoverToCarrier(
+            @Parameter(description = "ID đơn hàng") @PathVariable Long id
+    ) {
+        return ResponseEntity.ok(orderService.handoverToCarrier(id));
+    }
+
+    @PostMapping("/{id}/complete")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "GĐ 4 Bước 3: Khách nhận hàng & Hoàn tất đơn hàng",
+            description = "Xác nhận nhận hàng thành công. Trạng thái đơn hàng chuyển thành COMPLETED và TẤT CẢ CÁC SERIAL CHUYỂN SANG TRẠNG THÁI SOLD (ĐÃ BÁN).")
+    public ResponseEntity<OrderResponse> completeOrder(
+            @Parameter(description = "ID đơn hàng") @PathVariable Long id
+    ) {
+        return ResponseEntity.ok(orderService.updateStatus(id, OrderStatus.COMPLETED, getCurrentUserId(), isStaffOrAdmin()));
     }
 
     @DeleteMapping("/{id}")
@@ -128,4 +159,3 @@ public class OrderController {
                         || a.getAuthority().equals("ROLE_STAFF_TECH"));
     }
 }
-
