@@ -54,6 +54,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, reviews, reviews + "/{id}").permitAll()
                         .requestMatchers(reviews, reviews + "/**").authenticated()
 
+                        // Favorites belong to the signed-in customer and are private to that account.
+                        .requestMatchers("/api/favorites", "/api/favorites/**").hasRole("CUSTOMER")
+
                         .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/brands/**", "/api/products/**").permitAll()
 
                         // Administrative catalog, users, suppliers and warranty policies.
